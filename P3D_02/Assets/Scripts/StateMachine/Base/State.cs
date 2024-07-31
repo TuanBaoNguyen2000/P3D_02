@@ -4,11 +4,6 @@ using UnityEngine;
 
 public abstract class State 
 {
-
-    protected bool isAnimationFinished;
-    protected bool isExitingState;
-
-    string animBoolName;
     public virtual void Enter()
     {
         DoChecks();
@@ -16,6 +11,7 @@ public abstract class State
 
     public virtual void Exit()
     {
+
     }
 
     public virtual void LogicUpdate()
@@ -29,12 +25,6 @@ public abstract class State
     }
 
     public virtual void DoChecks() { }
-
-    public virtual void AnimationTrigger() { }
-
-    public virtual void AnimationFinishTrigger() => isAnimationFinished = true;
-
-
 
 }
 
