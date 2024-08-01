@@ -7,7 +7,9 @@ public class MeleeCharacter : MonoBehaviour
 
     [SerializeField] Transform targetMove;
     [SerializeField] float moveSpeed;
-    public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 0.5f;
+
+    public Vector3 velocity;
+    public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 1f;
     public Transform TargetMove => this.targetMove;
     public float MoveSpeed => this.moveSpeed;
 
@@ -27,12 +29,13 @@ public class MeleeCharacter : MonoBehaviour
 
     void Update()
     {
-        transform.position += new Vector3(0, 0, -0.1f);
         MeleeCharStateMachine.currentState?.LogicUpdate();
     }
 
     void FixedUpdate()
     {
         MeleeCharStateMachine.currentState?.PhysicsUpdate();
+        velocity += new Vector3(0, -0.1f, 0);
+        transform.position = Vector3.MoveTowards(transform.position, velocity, 3.5f * Time.fixedDeltaTime);
     }
 }

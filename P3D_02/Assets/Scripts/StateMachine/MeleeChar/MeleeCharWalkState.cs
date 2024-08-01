@@ -8,6 +8,7 @@ public class MeleeCharWalkState : State
     MeleeCharStateMachine stateMachine;
     bool isReached;
 
+    Vector3 direction;
 
     public MeleeCharWalkState(MeleeCharacter meleeChar, MeleeCharStateMachine stateMachine)
     {
@@ -27,19 +28,20 @@ public class MeleeCharWalkState : State
     {
         base.DoChecks();
         isReached = meleeChar.IsReachTarget;
+        direction = meleeChar.TargetMove.position - meleeChar.transform.position;
     }
     public override void LogicUpdate()
     {
         base.LogicUpdate();
-        meleeChar.transform.position = Vector3.MoveTowards(meleeChar.transform.position, meleeChar.TargetMove.position, meleeChar.MoveSpeed * 3.5f * Time.deltaTime);
      
-        if (isReached) 
-        {
-            stateMachine.ChangeState(meleeChar.MeleeCharAttackState);
-        }
+        //if (isReached) 
+        //{
+        //    stateMachine.ChangeState(meleeChar.MeleeCharAttackState);
+        //}
     }
     public override void PhysicsUpdate()
     {
         base.PhysicsUpdate();
+        //meleeChar.velocity = direction.normalized;
     }
 }
