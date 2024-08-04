@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class MeleeCharacter : MonoBehaviour
 {
@@ -8,7 +9,9 @@ public class MeleeCharacter : MonoBehaviour
     [SerializeField] Transform targetMove;
     [SerializeField] float moveSpeed;
 
-    public Vector3 velocity;
+    NavMeshAgent agent;
+
+    public NavMeshAgent Agent => this.agent;
     public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 1f;
     public Transform TargetMove => this.targetMove;
     public float MoveSpeed => this.moveSpeed;
@@ -17,6 +20,10 @@ public class MeleeCharacter : MonoBehaviour
     public MeleeCharWalkState MeleeCharWalkState;
     public MeleeCharAttackState MeleeCharAttackState;
 
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+    }
 
     void Start()
     {
@@ -35,7 +42,5 @@ public class MeleeCharacter : MonoBehaviour
     void FixedUpdate()
     {
         MeleeCharStateMachine.currentState?.PhysicsUpdate();
-        velocity += new Vector3(0, -0.1f, 0);
-        transform.position = Vector3.MoveTowards(transform.position, velocity, 3.5f * Time.fixedDeltaTime);
     }
 }

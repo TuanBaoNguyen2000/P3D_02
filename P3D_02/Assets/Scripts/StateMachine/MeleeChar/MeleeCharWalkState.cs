@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeleeCharWalkState : State
+public class MeleeCharWalkState : IState
 {
     MeleeCharacter meleeChar;
     MeleeCharStateMachine stateMachine;
@@ -16,32 +16,29 @@ public class MeleeCharWalkState : State
         this.stateMachine = stateMachine;
     }
 
-    public override void Enter()
+    public void Enter()
     {
-        base.Enter();
+        Debug.Log("Enter Walk State");
     }
-    public override void Exit() 
+    public void Exit() 
     { 
-        base.Exit();
+
     }
-    public override void DoChecks()
+
+    public void DoChecks()
     {
-        base.DoChecks();
         isReached = meleeChar.IsReachTarget;
-        direction = meleeChar.TargetMove.position - meleeChar.transform.position;
+        //direction = meleeChar.TargetMove.position - meleeChar.transform.position;
     }
-    public override void LogicUpdate()
+    public void LogicUpdate()
     {
-        base.LogicUpdate();
-     
-        //if (isReached) 
-        //{
-        //    stateMachine.ChangeState(meleeChar.MeleeCharAttackState);
-        //}
+        if (isReached)
+            stateMachine.ChangeState(meleeChar.MeleeCharAttackState);
+        else 
+            meleeChar.Agent.SetDestination(meleeChar.TargetMove.position);
     }
-    public override void PhysicsUpdate()
+    public void PhysicsUpdate()
     {
-        base.PhysicsUpdate();
-        //meleeChar.velocity = direction.normalized;
+        DoChecks();
     }
 }
