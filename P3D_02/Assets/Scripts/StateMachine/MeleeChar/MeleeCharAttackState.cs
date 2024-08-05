@@ -11,16 +11,18 @@ public class MeleeCharAttackState : IState
 
     public void Exit()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("Exit Attack State");
+
     }
 
     public void LogicUpdate()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("LogicUpdate Attack State");
+
     }
 
     public void PhysicsUpdate()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("PhysicsUpdate Attack State");
     }
 }
