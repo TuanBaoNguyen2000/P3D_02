@@ -5,40 +5,32 @@ using UnityEngine;
 public class MeleeCharWalkState : IState
 {
     MeleeCharacter meleeChar;
-    MeleeCharStateMachine stateMachine;
-    bool isReached;
+    MeleeCharStateMachine StateMachine => this.meleeChar.MeleeCharStateMachine;
+    bool IsReached => this.meleeChar.IsReachTarget;
 
-    Vector3 direction;
-
-    public MeleeCharWalkState(MeleeCharacter meleeChar, MeleeCharStateMachine stateMachine)
+    public MeleeCharWalkState(MeleeCharacter meleeChar)
     {
         this.meleeChar = meleeChar;
-        this.stateMachine = stateMachine;
     }
 
     public void Enter()
     {
-        Debug.Log("Enter Walk State");
+        meleeChar.Animator.SetBool("IsWalk", true);
     }
+
     public void Exit() 
-    { 
-
-    }
-
-    public void DoChecks()
     {
-        isReached = meleeChar.IsReachTarget;
-        //direction = meleeChar.TargetMove.position - meleeChar.transform.position;
+        meleeChar.Animator.SetBool("IsWalk", false);
     }
+
     public void LogicUpdate()
     {
-        if (isReached)
-            stateMachine.ChangeState(meleeChar.MeleeCharAttackState);
+        if (IsReached)
+            StateMachine.ChangeState(meleeChar.MeleeCharAttackState);
         else 
             meleeChar.Agent.SetDestination(meleeChar.TargetMove.position);
     }
     public void PhysicsUpdate()
     {
-        DoChecks();
     }
 }

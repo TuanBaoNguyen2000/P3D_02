@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class MeleeCharAttackState : IState
 {
+    MeleeCharacter meleeChar;
+    MeleeCharStateMachine StateMachine => this.meleeChar.MeleeCharStateMachine;
+    public MeleeCharAttackState(MeleeCharacter meleeChar)
+    {
+        this.meleeChar = meleeChar;
+    }
+
     public void Enter()
     {
         Debug.Log("Enter Attack State");
