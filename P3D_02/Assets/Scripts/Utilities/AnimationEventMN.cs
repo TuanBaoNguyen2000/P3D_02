@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class AnimationEvents : MonoBehaviour
+public class AnimationEventMN : MonoBehaviour
 {
     public Action OnAnimationBegin;
     public Action OnAnimationFinish;

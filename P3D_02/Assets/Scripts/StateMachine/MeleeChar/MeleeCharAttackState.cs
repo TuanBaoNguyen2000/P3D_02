@@ -13,7 +13,9 @@ public class MeleeCharAttackState : IState
     Collider hitboxCollider;
     List<Collider> collidersDamaged = new List<Collider>();
 
-    //IDamageable target;
+    int attackComboLimit = 0;
+    float timer = 0;
+    float attackSpeed;
 
     public MeleeCharAttackState(MeleeCharacter meleeChar)
     {
@@ -23,26 +25,50 @@ public class MeleeCharAttackState : IState
     public void Enter()
     {
         Debug.Log("Enter Attack State");
+        attackComboLimit = 1;
+        attackSpeed = 2f;
+        meleeChar.Animator.SetInteger("AttackComboLimit", attackComboLimit);
+        Attack();
+
+        meleeChar.AnimationEvents.OnAnimationFinish += OnAttackAnimFinsh;
     }
 
     public void Exit()
     {
         Debug.Log("Exit Attack State");
+        meleeChar.Animator.SetBool("IsAttack", false);
+        meleeChar.AnimationEvents.OnAnimationFinish -= OnAttackAnimFinsh;
+    }
 
+    void OnAttackAnimFinsh()
+    {
+        meleeChar.Animator.SetBool("IsAttack", false);
     }
 
     public void LogicUpdate()
     {
-        Debug.Log("LogicUpdate Attack State");
-
+        if (timer < attackSpeed)
+        {
+            timer += Time.deltaTime;
+        }
+        else
+        {
+            Attack();
+            timer = 0;
+        }
     }
 
     public void PhysicsUpdate()
     {
-        Debug.Log("PhysicsUpdate Attack State");
+
     }
 
-    protected void Attack()
+    private void Attack()
+    {
+        meleeChar.Animator.SetBool("IsAttack", true);
+    }
+
+    private void CauseDamage()
     {
         collidersDamaged.Clear();
         Collider[] collidersToDamage = new Collider[10];

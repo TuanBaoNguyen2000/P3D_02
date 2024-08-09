@@ -10,7 +10,9 @@ public class MeleeCharacter : MonoBehaviour
 
     #region Animation Manager
     [SerializeField] Animator animator;
+    [SerializeField] AnimationEventMN animationEvents;
     public Animator Animator => this.animator;
+    public AnimationEventMN AnimationEvents => this.animationEvents;
     #endregion
 
     #region State Manager
@@ -21,7 +23,7 @@ public class MeleeCharacter : MonoBehaviour
     [SerializeField] Transform targetMove;
     public float MoveSpeed => this.moveSpeed;
     public Transform TargetMove => this.targetMove;
-    public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 1f;
+    public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 0.2f;
     #endregion
 
     private void Awake()
@@ -36,6 +38,7 @@ public class MeleeCharacter : MonoBehaviour
         MeleeCharAttackState = new MeleeCharAttackState(this);
 
         MeleeCharStateMachine.Initialize(MeleeCharWalkState);
+
     }
 
     void Update()

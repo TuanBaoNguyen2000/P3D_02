@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641258, b: 0.574817, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -7727,6 +7727,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 430aea17f65ddba419bf9f426b17128f, type: 3}
+--- !u!95 &1061421435 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 9036980633323257398, guid: 2d0e8692e4337e5439de3158aae6871e, type: 3}
+  m_PrefabInstance: {fileID: 1806188049}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1063180728
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9624,7 +9629,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c5c2614823a5fc458f2a91efa6583be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 1061421435}
+  animationEvents: {fileID: 1806188052}
   moveSpeed: 1
   targetMove: {fileID: 360827737}
 --- !u!195 &1299276465
