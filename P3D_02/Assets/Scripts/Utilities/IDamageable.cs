@@ -4,5 +4,9 @@ using UnityEngine;
 
 public interface IDamageable 
 {
-    public void TakeDamage();
+    public void TakeDamage(float damage, float def);
+
+    public void CauseDamage(float atk, float critChange, float critRate);
+
+    public bool BeDodged(float dodgeRate);
 }

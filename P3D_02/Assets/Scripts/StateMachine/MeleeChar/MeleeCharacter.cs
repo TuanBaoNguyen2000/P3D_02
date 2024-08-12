@@ -8,6 +8,18 @@ public class MeleeCharacter : MonoBehaviour
     NavMeshAgent agent;
     public NavMeshAgent Agent => this.agent;
 
+    #region Entity Data
+    [SerializeField] EntityDataSO entityDataSO;
+    public EntityDataSO DataSO => this.entityDataSO;
+
+    public int level = 0;
+    public float curMaxHP, curATK, curATKSpeed;
+    public float curCritChance, curCritDMG;
+    public float curDEF, curDodgeRate;
+
+    public float curHP;
+    #endregion
+
     #region Animation Manager
     [SerializeField] Animator animator;
     [SerializeField] AnimationEventMN animationEvents;
@@ -15,6 +27,7 @@ public class MeleeCharacter : MonoBehaviour
     public AnimationEventMN AnimationEvents => this.animationEvents;
     #endregion
 
+    public Collider hitboxCol;
     #region State Manager
     public MeleeCharStateMachine MeleeCharStateMachine;
     public MeleeCharWalkState MeleeCharWalkState;
@@ -23,7 +36,7 @@ public class MeleeCharacter : MonoBehaviour
     [SerializeField] Transform targetMove;
     public float MoveSpeed => this.moveSpeed;
     public Transform TargetMove => this.targetMove;
-    public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 0.2f;
+    public bool IsReachTarget => Vector3.Distance(transform.position, targetMove.position) <= 2f;
     #endregion
 
     private void Awake()
@@ -37,8 +50,9 @@ public class MeleeCharacter : MonoBehaviour
         MeleeCharWalkState = new MeleeCharWalkState(this);
         MeleeCharAttackState = new MeleeCharAttackState(this);
 
+        level = 1;
+        InitData();
         MeleeCharStateMachine.Initialize(MeleeCharWalkState);
-
     }
 
     void Update()
@@ -49,5 +63,18 @@ public class MeleeCharacter : MonoBehaviour
     void FixedUpdate()
     {
         MeleeCharStateMachine.currentState?.PhysicsUpdate();
+    }
+
+    private void InitData()
+    {
+        curMaxHP = DataSO.baseMaxHP * level;
+        curATK = DataSO.baseATK * level;
+        curATKSpeed = DataSO.baseATKSpeed * level;
+        curCritChance = DataSO.baseCritChance * level;
+        curCritDMG = DataSO.baseCritDMG * level;
+        curDEF = DataSO.baseDEF * level;
+        curDodgeRate = DataSO.baseDodgeRate * level;
+
+        curHP = curMaxHP;
     }
 }
