@@ -72,7 +72,7 @@ public class CarController : MonoBehaviour
     {
         CheckGrounded();
         HandleMovement();
-        //HandleDrift();
+        HandleDrift();
     }
 
     void GetInputs()
@@ -115,8 +115,8 @@ public class CarController : MonoBehaviour
         float currentSpeed = isBoosting ? boostSpeed : maxSpeed;
         Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * moveInput * transform.forward;
 
-        Debug.Log("moveInput: " + moveInput);
-        Debug.Log("forwardForce: " + forwardForce);
+        //Debug.Log("moveInput: " + moveInput);
+        //Debug.Log("forwardForce: " + forwardForce);
         // Áp dụng lực
         if (carRb.velocity.magnitude < currentSpeed)
         {
