@@ -834,7 +834,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.85, y: 0.93, z: 4.34}
+  m_Size: {x: 2, y: 1, z: 4.5}
   m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!54 &1275324564
 Rigidbody:
@@ -845,8 +845,8 @@ Rigidbody:
   m_GameObject: {fileID: 1275324562}
   serializedVersion: 4
   m_Mass: 100
-  m_Drag: 1
-  m_AngularDrag: 0.1
+  m_Drag: 0.8
+  m_AngularDrag: 0.2
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -875,23 +875,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3da0cfca3dcd6a146832a66bb6fd19d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 1000
+  maxSpeed: 100
   acceleration: 2000
   brakeForce: 100
-  turnSensitivity: 2
+  turnSensitivity: 1.5
   groundedRayLength: 0.5
-  driftFactor: 2
-  minSpeedToDrift: 100
-  driftTurnMultiplier: 1.5
-  gripLoss: 0.8
+  groundedRayOffset: {x: 0, y: 0.2, z: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 1
-  boostSpeed: 200
-  boostDuration: 2
+  driftFactor: 2
+  minSpeedToDrift: 5
+  driftTurnMultiplier: 1.5
+  gripLoss: 0.8
+  boostSpeed: 2000
+  boostDuration: 3
   boostRecoveryRate: 0.1
   boostCost: 20
-  boostMeter: 100.40248
+  boostMeter: 100
   maxBoostMeter: 100
   driftSmoke: []
   tireTrails: []
@@ -908,7 +909,7 @@ Transform:
   m_GameObject: {fileID: 1275324562}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.86602545, z: 0, w: 0.49999994}
-  m_LocalPosition: {x: 0, y: 0, z: -25.95}
+  m_LocalPosition: {x: 0, y: 0.5, z: -25.95}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

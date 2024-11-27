@@ -10,14 +10,16 @@ public class CarController : MonoBehaviour
     public float acceleration = 50f;
     public float brakeForce = 100f;
     public float turnSensitivity = 1.5f;
+
     public float groundedRayLength = 0.5f;
+    public Vector3 groundedRayOffset = new Vector3(0, 0.5f, 0);
+    public LayerMask groundLayer;
 
     [Header("Drift Settings")]
     public float driftFactor = 0.95f;
     public float minSpeedToDrift = 40f;
     public float driftTurnMultiplier = 1.5f;
     public float gripLoss = 0.8f;
-    public LayerMask groundLayer;
 
     [Header("Boost Settings")]
     public float boostSpeed = 200f;
@@ -63,7 +65,7 @@ public class CarController : MonoBehaviour
     void Update()
     {
         GetInputs();
-        HandleBoost();
+        //HandleBoost();
         //UpdateEffects();
         //UpdateSounds();
     }
@@ -73,6 +75,7 @@ public class CarController : MonoBehaviour
         CheckGrounded();
         HandleMovement();
         HandleDrift();
+        Debug.Log("carRb.velocity.magnitude: " + carRb.velocity.magnitude);
     }
 
     void GetInputs()
@@ -116,7 +119,7 @@ public class CarController : MonoBehaviour
         Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * moveInput * transform.forward;
 
         //Debug.Log("moveInput: " + moveInput);
-        //Debug.Log("forwardForce: " + forwardForce);
+
         // Áp dụng lực
         if (carRb.velocity.magnitude < currentSpeed)
         {
@@ -153,9 +156,9 @@ public class CarController : MonoBehaviour
     void CheckGrounded()
     {
 
-        //isGrounded = Physics.Raycast(transform.position + new Vector3(0, 1f, 0), -transform.up, groundedRayLength, groundLayer);
+        isGrounded = Physics.Raycast(transform.position + groundedRayOffset, -transform.up, groundedRayLength, groundLayer);
         //Debug.Log("isGrounded: " + isGrounded);
-        isGrounded = true;
+        //isGrounded = true;
     }
 
     void StartDrift()
@@ -242,17 +245,23 @@ public class CarController : MonoBehaviour
     {
         // Vẽ tia kiểm tra mặt đất
         Gizmos.color = isGrounded ? Color.green : Color.red;
-        Vector3 rayStart = transform.position + new Vector3(0, 1f, 0);
-        Vector3 rayEnd = transform.position + Vector3.down * groundedRayLength;
+        Vector3 rayStart = transform.position + groundedRayOffset;
+        Vector3 rayEnd = rayStart + Vector3.down * groundedRayLength;
         Gizmos.DrawLine(rayStart, rayEnd);
         Gizmos.DrawWireSphere(rayEnd, 0.05f);
 
         if (carRb != null)
         {
-            Gizmos.color = Color.yellow;
+            Gizmos.color = Color.green;
             Gizmos.DrawSphere(transform.position + transform.rotation * carRb.centerOfMass, 0.1f);
         }
 
+        //Driffing 
+        if (isDrifting)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, 1f);
+        }
 
         // Kiểm tra nếu Rigidbody không null
         if (carRb != null)
