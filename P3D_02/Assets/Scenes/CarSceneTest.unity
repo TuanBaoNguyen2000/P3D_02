@@ -884,11 +884,13 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 1
-  driftFactor: 2
+  driftFactor: 1.2
   minSpeedToDrift: 5
-  driftTurnMultiplier: 1.5
-  gripLoss: 0.8
-  boostSpeed: 2000
+  driftTurnMultiplier: 2.5
+  DriftDragLoss: 0.8
+  maxDriftAngle: 30
+  driftLerpSpeed: 3
+  boostSpeed: 200
   boostDuration: 3
   boostRecoveryRate: 0.1
   boostCost: 20

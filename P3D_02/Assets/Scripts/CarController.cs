@@ -19,7 +19,9 @@ public class CarController : MonoBehaviour
     public float driftFactor = 0.95f;
     public float minSpeedToDrift = 40f;
     public float driftTurnMultiplier = 1.5f;
-    public float gripLoss = 0.8f;
+    public float DriftDragLoss = 0.8f;
+    public float maxDriftAngle = 30f; // Góc trượt tối đa
+    public float driftLerpSpeed = 5f; // Tốc độ thay đổi góc trượt
 
     [Header("Boost Settings")]
     public float boostSpeed = 200f;
@@ -65,7 +67,7 @@ public class CarController : MonoBehaviour
     void Update()
     {
         GetInputs();
-        //HandleBoost();
+        HandleBoost();
         //UpdateEffects();
         //UpdateSounds();
     }
@@ -142,8 +144,8 @@ public class CarController : MonoBehaviour
         if (!isDrifting) return;
 
         // Tính toán góc trượt
-        float targetDriftAngle = steerInput * 30f;
-        currentDriftAngle = Mathf.Lerp(currentDriftAngle, targetDriftAngle, Time.fixedDeltaTime * 5f);
+        float targetDriftAngle = steerInput * maxDriftAngle;
+        currentDriftAngle = Mathf.Lerp(currentDriftAngle, targetDriftAngle, Time.fixedDeltaTime * driftLerpSpeed);
 
         // Áp dụng lực trượt ngang
         Vector3 driftForce = transform.right * currentDriftAngle * driftFactor;
@@ -165,7 +167,7 @@ public class CarController : MonoBehaviour
     {
         if (isDrifting) return;
         isDrifting = true;
-        carRb.drag = initialDragValue * gripLoss;
+        carRb.drag = initialDragValue * DriftDragLoss;
         EnableDriftEffects(true);
     }
 
