@@ -1,35 +1,36 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
     [Header("Car Settings")]
-    public float maxSpeed = 150f;
-    public float acceleration = 50f;
+    public float maxSpeed = 100f;
+    public float acceleration = 500f;
     public float brakeForce = 100f;
     public float turnSensitivity = 1.5f;
 
     public float groundedRayLength = 0.5f;
-    public Vector3 groundedRayOffset = new Vector3(0, 0.5f, 0);
+    public Vector3 groundedRayOffset = new Vector3(0, 0.1f, 0);
     public LayerMask groundLayer;
 
     [Header("Drift Settings")]
     public float driftFactor = 0.95f;
-    public float minSpeedToDrift = 40f;
+    public float minSpeedToDrift = 10f;
     public float driftTurnMultiplier = 1.5f;
     public float DriftDragLoss = 0.8f;
     public float maxDriftAngle = 30f; // Góc trượt tối đa
     public float driftLerpSpeed = 5f; // Tốc độ thay đổi góc trượt
 
     [Header("Boost Settings")]
-    public float boostSpeed = 200f;
-    public float boostDuration = 2f;
-    public float boostRecoveryRate = 0.1f;
-    public float boostCost = 20f;
-    public float boostMeter = 100f;
-    public float maxBoostMeter = 100f;
+    public float boostMaxSpeed = 200f;
+    public float boostAcceleration = 1000f;
+    public float boostEnergyCapacity = 100f;
+    public float currentBoostEnergy = 10f;
+    public float boostConsumptionRate = 15f;
+    public float boostRecoveryRate = 10f;
 
     [Header("Visual Effects")]
     public ParticleSystem[] driftSmoke;
@@ -41,6 +42,9 @@ public class CarController : MonoBehaviour
     public AudioSource driftSound;
     public AudioSource boostSound;
 
+    [Header("AI")]
+    public bool isEnemy = false;
+
     private Rigidbody carRb;
     private float moveInput;
     private float steerInput;
@@ -49,6 +53,9 @@ public class CarController : MonoBehaviour
     private bool isGrounded;
     private float currentDriftAngle;
     private float initialDragValue;
+
+    public float MoveInput { get => this.moveInput; set => this.moveInput = value; }
+    public float SteerInput { get => this.steerInput; set => this.steerInput = value; }
 
     void Start()
     {
@@ -66,7 +73,7 @@ public class CarController : MonoBehaviour
 
     void Update()
     {
-        GetInputs();
+        if (!isEnemy) GetInputs();
         HandleBoost();
         //UpdateEffects();
         //UpdateSounds();
@@ -98,18 +105,8 @@ public class CarController : MonoBehaviour
         // Xử lý boost
         if (Input.GetKeyDown(KeyCode.LeftShift) && CanBoost())
         {
-            StartCoroutine(ActivateBoost());
+            StartBoost();
         }
-    }
-
-    bool CanDrift()
-    {
-        return isGrounded && carRb.velocity.magnitude > minSpeedToDrift;
-    }
-
-    bool CanBoost()
-    {
-        return boostMeter >= boostCost && !isBoosting;
     }
 
     void HandleMovement()
@@ -117,13 +114,14 @@ public class CarController : MonoBehaviour
         if (!isGrounded) return;
 
         // Tính toán lực đẩy
-        float currentSpeed = isBoosting ? boostSpeed : maxSpeed;
-        Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * moveInput * transform.forward;
+        float currentMaxSpeed = isBoosting ? boostMaxSpeed : maxSpeed;
+        float currentAcceleration = isBoosting ? boostAcceleration : acceleration;
+        Vector3 forwardForce = (isDrifting ? currentAcceleration * 0.8f : currentAcceleration) * moveInput * transform.forward;
 
         //Debug.Log("moveInput: " + moveInput);
 
         // Áp dụng lực
-        if (carRb.velocity.magnitude < currentSpeed)
+        if (carRb.velocity.magnitude < currentMaxSpeed)
         {
             carRb.AddForce(forwardForce * Time.fixedDeltaTime, ForceMode.Acceleration);
         }
@@ -137,6 +135,18 @@ public class CarController : MonoBehaviour
         // Xử lý chuyển hướng
         float turnAmount = steerInput * turnSensitivity * (isDrifting ? driftTurnMultiplier : 1f);
         transform.Rotate(carRb.velocity.magnitude * Time.fixedDeltaTime * turnAmount * Vector3.up);
+    }
+    void CheckGrounded()
+    {
+
+        isGrounded = Physics.Raycast(transform.position + groundedRayOffset, -transform.up, groundedRayLength, groundLayer);
+        //Debug.Log("isGrounded: " + isGrounded);
+    }
+
+    #region Drift 
+    bool CanDrift()
+    {
+        return isGrounded && carRb.velocity.magnitude > minSpeedToDrift;
     }
 
     void HandleDrift()
@@ -152,18 +162,10 @@ public class CarController : MonoBehaviour
         carRb.AddForce(driftForce * Time.fixedDeltaTime, ForceMode.VelocityChange);
 
         // Phục hồi boost khi drift
-        boostMeter = Mathf.Min(maxBoostMeter, boostMeter + boostRecoveryRate * Time.deltaTime * 100f);
+        currentBoostEnergy = Mathf.Min(boostEnergyCapacity, currentBoostEnergy + boostRecoveryRate * Time.deltaTime);
     }
 
-    void CheckGrounded()
-    {
-
-        isGrounded = Physics.Raycast(transform.position + groundedRayOffset, -transform.up, groundedRayLength, groundLayer);
-        //Debug.Log("isGrounded: " + isGrounded);
-        //isGrounded = true;
-    }
-
-    void StartDrift()
+    public void StartDrift()
     {
         if (isDrifting) return;
         isDrifting = true;
@@ -171,7 +173,7 @@ public class CarController : MonoBehaviour
         EnableDriftEffects(true);
     }
 
-    void StopDrift()
+    public void StopDrift()
     {
         isDrifting = false;
         carRb.drag = initialDragValue;
@@ -198,28 +200,53 @@ public class CarController : MonoBehaviour
             else driftSound.Stop();
         }
     }
+    #endregion
 
-    IEnumerator ActivateBoost()
+    #region Boost
+    bool CanBoost()
     {
-        isBoosting = true;
-        boostMeter -= boostCost;
-
-        if (boostEffect) boostEffect.Play();
-        if (boostSound) boostSound.Play();
-
-        yield return new WaitForSeconds(boostDuration);
-
-        isBoosting = false;
-        if (boostEffect) boostEffect.Stop();
+        return currentBoostEnergy >= boostConsumptionRate && !isBoosting;
     }
-
     void HandleBoost()
     {
-        if (!isBoosting && boostMeter < maxBoostMeter)
+        if (!isBoosting) return;
+
+        currentBoostEnergy -= boostConsumptionRate * Time.deltaTime;
+
+        if (currentBoostEnergy <= 0)
         {
-            boostMeter += boostRecoveryRate * Time.deltaTime * 50f;
+            StopBoost();
         }
     }
+    void StartBoost()
+    {
+        isBoosting = true;
+        EnableBoostEffects(true);
+    }
+
+    void StopBoost()
+    {
+        isBoosting = false;
+        EnableBoostEffects(false);
+    }
+
+    void EnableBoostEffects(bool enable)
+    {
+        if (!boostEffect) return;
+        if (!boostSound) return;
+
+        if (enable)
+        {
+            boostEffect.Play();
+            boostSound.Play();
+        }
+        else
+        {
+            boostEffect.Stop();
+            boostSound.Stop();
+        }
+    }
+    #endregion
 
     void UpdateEffects()
     {
