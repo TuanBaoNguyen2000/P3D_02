@@ -4,6 +4,7 @@ using UnityEngine;
 public class WaypointsManager : MonoBehaviour
 {
     public List<Transform> waypoints = new List<Transform>();
+    public bool isShowGizmos;
 
     private void OnDrawGizmos()
     {
@@ -15,6 +16,8 @@ public class WaypointsManager : MonoBehaviour
     /// </summary>
     private void DrawWaypoints()
     {
+        if (!isShowGizmos) return;
+
         Gizmos.color = Color.green;
 
         for (int i = 0; i < waypoints.Count; i++)

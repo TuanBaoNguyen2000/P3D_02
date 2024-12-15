@@ -7,92 +7,98 @@ using UnityEngine;
 public class CarController : MonoBehaviour
 {
     [Header("Car Settings")]
-    public float maxSpeed = 100f;
-    public float acceleration = 500f;
-    public float brakeForce = 100f;
-    public float turnSensitivity = 1.5f;
+    [SerializeField] float maxSpeed = 100f; // Maximum speed of the car
+    [SerializeField] float acceleration = 500f; // Acceleration force
+    [SerializeField] float brakeForce = 100f; // Braking force
+    [SerializeField] float turnSensitivity = 1.5f; // Sensitivity for steering
 
-    public float groundedRayLength = 0.5f;
-    public Vector3 groundedRayOffset = new Vector3(0, 0.1f, 0);
-    public LayerMask groundLayer;
+    [SerializeField] float groundedRayLength = 0.5f; // Length of the ray to detect if the car is grounded
+    [SerializeField] Vector3 groundedRayOffset = new Vector3(0, 0.1f, 0); // Offset for the grounded ray
+    [SerializeField] LayerMask groundLayer; // Layer to detect the ground
 
     [Header("Drift Settings")]
-    public float driftFactor = 0.95f;
-    public float minSpeedToDrift = 10f;
-    public float driftTurnMultiplier = 1.5f;
-    public float DriftDragLoss = 0.8f;
-    public float maxDriftAngle = 30f; // Góc trượt tối đa
-    public float driftLerpSpeed = 5f; // Tốc độ thay đổi góc trượt
+    [SerializeField] float driftFactor = 0.95f; // How much the car will slide during a drift
+    [SerializeField] float minSpeedToDrift = 10f; // Minimum speed required to start drifting
+    [SerializeField] float driftTurnMultiplier = 1.5f; // Steering sensitivity multiplier during drifting
+    [SerializeField] float DriftDragLoss = 0.8f; // Drag reduction during drifting
+    [SerializeField] float maxDriftAngle = 30f; // Maximum angle for drifting
+    [SerializeField] float driftLerpSpeed = 5f; // Speed to interpolate drift angle changes
 
     [Header("Boost Settings")]
-    public float boostMaxSpeed = 200f;
-    public float boostAcceleration = 1000f;
-    public float boostEnergyCapacity = 100f;
-    public float currentBoostEnergy = 10f;
-    public float boostConsumptionRate = 15f;
-    public float boostRecoveryRate = 10f;
+    [SerializeField] float boostMaxSpeed = 200f; // Maximum speed during boost
+    [SerializeField] float boostAcceleration = 1000f; // Acceleration during boost
+    [SerializeField] float boostEnergyCapacity = 100f; // Total boost energy capacity
+    [SerializeField] float currentBoostEnergy = 10f; // Current amount of boost energy
+    [SerializeField] float boostConsumptionRate = 15f; // How fast boost energy is consumed
+    [SerializeField] float boostRecoveryRate = 10f; // How fast boost energy recovers
 
     [Header("Visual Effects")]
-    public ParticleSystem[] driftSmoke;
-    public TrailRenderer[] tireTrails;
-    public ParticleSystem boostEffect;
+    public ParticleSystem[] driftSmoke; // Visual effects for drifting smoke
+    public TrailRenderer[] tireTrails; // Trail effects for tire marks
+    public ParticleSystem boostEffect; // Visual effect for boosting
 
     [Header("Sound Effects")]
-    public AudioSource engineSound;
-    public AudioSource driftSound;
-    public AudioSource boostSound;
+    public AudioSource engineSound; // Engine sound effect
+    public AudioSource driftSound; // Sound effect for drifting
+    public AudioSource boostSound; // Sound effect for boosting
 
     [Header("AI")]
-    public bool isEnemy = false;
+    public bool isEnemy = false; // Flag to indicate if the car is controlled by AI
 
-    private Rigidbody carRb;
-    private float moveInput;
-    private float steerInput;
-    private bool isDrifting;
-    private bool isBoosting;
-    private bool isGrounded;
-    private float currentDriftAngle;
-    private float initialDragValue;
+    // Private variables for internal state
+    private Rigidbody carRb; // Rigidbody of the car
+    private float moveInput; // Input for forward/backward movement
+    private float steerInput; // Input for steering
+    private bool isDrifting; // Whether the car is currently drifting
+    private bool isBoosting; // Whether the car is currently boosting
+    private bool isGrounded; // Whether the car is grounded
+    private float currentDriftAngle; // Current angle of drifting
+    private float initialDragValue; // Initial drag value for resetting after drifting
 
+    // Properties to expose 
     public float MoveInput { get => this.moveInput; set => this.moveInput = value; }
     public float SteerInput { get => this.steerInput; set => this.steerInput = value; }
+    public bool IsGrounded { get => this.isGrounded; }
+    public float CurrentBoostEnergy { get => this.currentBoostEnergy;}
+    public Rigidbody CarRb { get => this.carRb; }
 
     void Start()
     {
         SetupComponents();
     }
 
+    // Initialize components and variables
     void SetupComponents()
     {
         carRb = GetComponent<Rigidbody>();
         initialDragValue = carRb.drag;
 
-        // Thiết lập âm thanh
+        // Play engine sound at the start
         if (engineSound) engineSound.Play();
     }
 
     void Update()
     {
+        // Get player input if the car is not AI-controlled
         if (!isEnemy) GetInputs();
-        HandleBoost();
-        //UpdateEffects();
-        //UpdateSounds();
+
+        HandleBoost(); // Handle boost logic
     }
 
     void FixedUpdate()
     {
-        CheckGrounded();
-        HandleMovement();
-        HandleDrift();
-        Debug.Log("carRb.velocity.magnitude: " + carRb.velocity.magnitude);
+        CheckGrounded(); // Check if the car is on the ground
+        HandleMovement(); // Handle car movement
+        HandleDrift(); // Handle drifting logic
     }
 
+    // Get input for movement, steering, drifting, and boosting
     void GetInputs()
     {
         moveInput = Input.GetAxis("Vertical");
         steerInput = Input.GetAxis("Horizontal");
 
-        // Xử lý drift
+        // Handle drift input
         if (Input.GetKey(KeyCode.Space) && CanDrift())
         {
             StartDrift();
@@ -102,69 +108,71 @@ public class CarController : MonoBehaviour
             StopDrift();
         }
 
-        // Xử lý boost
+        // Handle boost input
         if (Input.GetKeyDown(KeyCode.LeftShift) && CanBoost())
         {
             StartBoost();
         }
     }
 
+    // Handle forward movement, braking, and turning
     void HandleMovement()
     {
         if (!isGrounded) return;
 
-        // Tính toán lực đẩy
+        // Calculate forward force
         float currentMaxSpeed = isBoosting ? boostMaxSpeed : maxSpeed;
         float currentAcceleration = isBoosting ? boostAcceleration : acceleration;
         Vector3 forwardForce = (isDrifting ? currentAcceleration * 0.8f : currentAcceleration) * moveInput * transform.forward;
 
-        //Debug.Log("moveInput: " + moveInput);
-
-        // Áp dụng lực
+        // Apply force if under max speed
         if (carRb.velocity.magnitude < currentMaxSpeed)
         {
             carRb.AddForce(forwardForce * Time.fixedDeltaTime, ForceMode.Acceleration);
         }
 
-        // Xử lý phanh
+        // Handle braking
         if (moveInput < 0)
         {
             carRb.AddForce(brakeForce * Time.fixedDeltaTime * -carRb.velocity, ForceMode.Acceleration);
         }
 
-        // Xử lý chuyển hướng
+        // Handle turning
         float turnAmount = steerInput * turnSensitivity * (isDrifting ? driftTurnMultiplier : 1f);
         transform.Rotate(carRb.velocity.magnitude * Time.fixedDeltaTime * turnAmount * Vector3.up);
     }
+
+    // Check if the car is on the ground
     void CheckGrounded()
     {
-
         isGrounded = Physics.Raycast(transform.position + groundedRayOffset, -transform.up, groundedRayLength, groundLayer);
-        //Debug.Log("isGrounded: " + isGrounded);
+    }
+
+    public void ResetCar(Vector3 position, Vector3 direction)
+    {
+        this.transform.position = position;
+
+        if (direction != Vector3.zero)
+        {
+            this.transform.rotation = Quaternion.LookRotation(direction.normalized);
+        }
+        else
+        {
+            Debug.LogWarning("Direction vector is zero. Cannot update rotation.");
+        }
+
+        carRb.velocity = Vector3.zero;
+        carRb.angularVelocity = Vector3.zero;  
     }
 
     #region Drift 
-    bool CanDrift()
+    // Check if drifting is allowed
+    public bool CanDrift()
     {
         return isGrounded && carRb.velocity.magnitude > minSpeedToDrift;
     }
 
-    void HandleDrift()
-    {
-        if (!isDrifting) return;
-
-        // Tính toán góc trượt
-        float targetDriftAngle = steerInput * maxDriftAngle;
-        currentDriftAngle = Mathf.Lerp(currentDriftAngle, targetDriftAngle, Time.fixedDeltaTime * driftLerpSpeed);
-
-        // Áp dụng lực trượt ngang
-        Vector3 driftForce = transform.right * currentDriftAngle * driftFactor;
-        carRb.AddForce(driftForce * Time.fixedDeltaTime, ForceMode.VelocityChange);
-
-        // Phục hồi boost khi drift
-        currentBoostEnergy = Mathf.Min(boostEnergyCapacity, currentBoostEnergy + boostRecoveryRate * Time.deltaTime);
-    }
-
+    // Start drifting
     public void StartDrift()
     {
         if (isDrifting) return;
@@ -173,6 +181,7 @@ public class CarController : MonoBehaviour
         EnableDriftEffects(true);
     }
 
+    // Stop drifting
     public void StopDrift()
     {
         isDrifting = false;
@@ -181,6 +190,24 @@ public class CarController : MonoBehaviour
         EnableDriftEffects(false);
     }
 
+    // Apply drifting forces and logic
+    void HandleDrift()
+    {
+        if (!isDrifting) return;
+
+        // Calculate target drift angle
+        float targetDriftAngle = steerInput * maxDriftAngle;
+        currentDriftAngle = Mathf.Lerp(currentDriftAngle, targetDriftAngle, Time.fixedDeltaTime * driftLerpSpeed);
+
+        // Apply lateral drift force
+        Vector3 driftForce = transform.right * currentDriftAngle * driftFactor;
+        carRb.AddForce(driftForce * Time.fixedDeltaTime, ForceMode.VelocityChange);
+
+        // Recover boost energy while drifting
+        currentBoostEnergy = Mathf.Min(boostEnergyCapacity, currentBoostEnergy + boostRecoveryRate * Time.deltaTime);
+    }
+
+    // Enable or disable visual and audio effects for drifting
     void EnableDriftEffects(bool enable)
     {
         foreach (var smoke in driftSmoke)
@@ -203,10 +230,27 @@ public class CarController : MonoBehaviour
     #endregion
 
     #region Boost
-    bool CanBoost()
+    // Check if boosting is allowed
+    public bool CanBoost()
     {
         return currentBoostEnergy >= boostConsumptionRate && !isBoosting;
     }
+
+    // Start boosting
+    public void StartBoost()
+    {
+        isBoosting = true;
+        EnableBoostEffects(true);
+    }
+
+    // Stop boosting
+    public void StopBoost()
+    {
+        isBoosting = false;
+        EnableBoostEffects(false);
+    }
+
+    // Handle energy consumption during boost
     void HandleBoost()
     {
         if (!isBoosting) return;
@@ -218,18 +262,8 @@ public class CarController : MonoBehaviour
             StopBoost();
         }
     }
-    void StartBoost()
-    {
-        isBoosting = true;
-        EnableBoostEffects(true);
-    }
 
-    void StopBoost()
-    {
-        isBoosting = false;
-        EnableBoostEffects(false);
-    }
-
+    // Enable or disable boost visual and audio effects
     void EnableBoostEffects(bool enable)
     {
         if (!boostEffect) return;
@@ -248,42 +282,15 @@ public class CarController : MonoBehaviour
     }
     #endregion
 
-    void UpdateEffects()
-    {
-        // Cập nhật cường độ hiệu ứng dựa trên tốc độ
-        float velocityRatio = carRb.velocity.magnitude / maxSpeed;
-
-        foreach (var smoke in driftSmoke)
-        {
-            var emission = smoke.emission;
-            emission.rateOverTime = isDrifting ? velocityRatio * 50f : 0f;
-        }
-    }
-
-    void UpdateSounds()
-    {
-        if (engineSound)
-        {
-            // Điều chỉnh pitch của động cơ dựa trên tốc độ
-            float speedRatio = carRb.velocity.magnitude / maxSpeed;
-            engineSound.pitch = Mathf.Lerp(0.5f, 1.5f, speedRatio);
-        }
-    }
-
+    // Draw debug visuals in the scene view
     void OnDrawGizmos()
     {
-        // Vẽ tia kiểm tra mặt đất
+        // Draw a ray for grounded check
         Gizmos.color = isGrounded ? Color.green : Color.red;
         Vector3 rayStart = transform.position + groundedRayOffset;
         Vector3 rayEnd = rayStart + Vector3.down * groundedRayLength;
         Gizmos.DrawLine(rayStart, rayEnd);
         Gizmos.DrawWireSphere(rayEnd, 0.05f);
-
-        if (carRb != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(transform.position + transform.rotation * carRb.centerOfMass, 0.1f);
-        }
 
         //Driffing 
         if (isDrifting)
@@ -292,29 +299,25 @@ public class CarController : MonoBehaviour
             Gizmos.DrawWireSphere(transform.position, 1f);
         }
 
-        // Kiểm tra nếu Rigidbody không null
-        if (carRb != null)
+        // forward force
+        Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * moveInput * transform.forward;
+        Gizmos.color = Color.green; 
+        Gizmos.DrawLine(transform.position, transform.position + forwardForce * 2); 
+
+        // drift force
+        if (isDrifting)
         {
-            // Vẽ lực đẩy (forward force)
-            Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * moveInput * transform.forward;
-            Gizmos.color = Color.green;  // Màu xanh cho lực đẩy
-            Gizmos.DrawLine(transform.position, transform.position + forwardForce * 2);  // Vẽ vector lực đẩy
+            Vector3 driftForce = currentDriftAngle * driftFactor * transform.right;
+            Gizmos.color = Color.blue; 
+            Gizmos.DrawLine(transform.position, transform.position + driftForce * 2); 
+        }
 
-            // Vẽ lực trượt (drift force)
-            if (isDrifting)
-            {
-                Vector3 driftForce = currentDriftAngle * driftFactor * transform.right;
-                Gizmos.color = Color.blue;  // Màu xanh dương cho lực trượt
-                Gizmos.DrawLine(transform.position, transform.position + driftForce * 2);  // Vẽ vector lực trượt
-            }
-
-            // Vẽ lực phanh (brake force)
-            if (moveInput < 0)
-            {
-                Vector3 brakeForce = this.brakeForce * -carRb.velocity * Time.fixedDeltaTime;
-                Gizmos.color = Color.red;  // Màu đỏ cho lực phanh
-                Gizmos.DrawLine(transform.position, transform.position + brakeForce * 2);  // Vẽ vector lực phanh
-            }
+        // brake force
+        if (moveInput < 0)
+        {
+            Vector3 brakeForce = this.brakeForce * -carRb.velocity * Time.fixedDeltaTime;
+            Gizmos.color = Color.red;  
+            Gizmos.DrawLine(transform.position, transform.position + brakeForce * 2);  
         }
     }
 }
