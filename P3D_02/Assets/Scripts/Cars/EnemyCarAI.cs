@@ -311,19 +311,5 @@ public class EnemyCarAI : MonoBehaviour
         {
             Gizmos.DrawWireSphere(waypoints[currentWaypointIndex].position, waypointThreshold);
         }
-
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(waypoints[currentWaypointIndex].position, waypoints[currentWaypointIndex + 1].position);
-
-        // Draw waypoint path
-        //Gizmos.color = Color.yellow;
-        //for (int i = 0; i < waypoints.Length; i++)
-        //{
-        //    if (waypoints[i] != null && i + 1 < waypoints.Length && waypoints[i + 1] != null)
-        //    {
-        //        Gizmos.DrawLine(waypoints[i].position, waypoints[i + 1].position);
-        //    }
-        //}
     }
 }

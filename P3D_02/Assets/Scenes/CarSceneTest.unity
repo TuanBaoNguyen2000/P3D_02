@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641258, b: 0.574817, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -243,7 +243,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4366144850234904095, guid: 27e8bc534fb9c974fa4da2c0a43518fd, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -269,7 +269,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7027452236779337272, guid: bde06e7a046f3f341a9c307888b8df9a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7695902167163595906, guid: bde06e7a046f3f341a9c307888b8df9a, type: 3}
       propertyPath: m_RootOrder
@@ -677,7 +677,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3179074353417769253, guid: 2953943eb6ab8e24081b12ab3f22a4b3, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -901,7 +901,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7071668861833630463, guid: 95fa7fc8bfed17d498b877fadc1697fc, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7595406466165016645, guid: 95fa7fc8bfed17d498b877fadc1697fc, type: 3}
       propertyPath: m_RootOrder
@@ -1516,17 +1516,17 @@ MonoBehaviour:
   maxSpeed: 100
   acceleration: 2000
   brakeForce: 100
-  turnSensitivity: 1.7
+  turnSensitivity: 1.6
   groundedRayLength: 0.5
   groundedRayOffset: {x: 0, y: 0.2, z: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 1
-  driftFactor: 1.2
+  driftFactor: 1
   minSpeedToDrift: 5
-  driftTurnMultiplier: 3
-  DriftDragLoss: 0.8
-  maxDriftAngle: 30
+  driftTurnMultiplier: 3.5
+  DriftDragLoss: 0.9
+  maxDriftAngle: 45
   driftLerpSpeed: 3
   boostMaxSpeed: 200
   boostAcceleration: 3000
@@ -1540,7 +1540,7 @@ MonoBehaviour:
   engineSound: {fileID: 0}
   driftSound: {fileID: 0}
   boostSound: {fileID: 0}
-  isEnemy: 1
+  isEnemy: 0
 --- !u!4 &1204502382
 Transform:
   m_ObjectHideFlags: 0
@@ -1757,17 +1757,17 @@ MonoBehaviour:
   maxSpeed: 100
   acceleration: 2000
   brakeForce: 100
-  turnSensitivity: 1.7
+  turnSensitivity: 1.6
   groundedRayLength: 0.5
   groundedRayOffset: {x: 0, y: 0.2, z: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 1
-  driftFactor: 1.2
+  driftFactor: 1
   minSpeedToDrift: 5
-  driftTurnMultiplier: 2.4
-  DriftDragLoss: 0.8
-  maxDriftAngle: 30
+  driftTurnMultiplier: 3.5
+  DriftDragLoss: 0.9
+  maxDriftAngle: 45
   driftLerpSpeed: 3
   boostMaxSpeed: 200
   boostAcceleration: 3000
@@ -2202,7 +2202,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8252766751281143996, guid: d7c9b08657eabc54db441e4854d7996e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8776503084654541318, guid: d7c9b08657eabc54db441e4854d7996e, type: 3}
       propertyPath: m_RootOrder
@@ -2409,7 +2409,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9098308318136754365, guid: cae49809804330a498981fb4fd11d70e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2850,7 +2850,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSmoothness: 5
   rotSmoothness: 2
-  moveOffset: {x: 0, y: 3.5, z: -7}
+  moveOffset: {x: 0, y: 4, z: -10}
   rotOffset: {x: 0, y: 3, z: 0}
   carTarget: {fileID: 1204502382}
 --- !u!1 &1971034542

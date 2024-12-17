@@ -88,8 +88,9 @@ public class CarController : MonoBehaviour
     void FixedUpdate()
     {
         CheckGrounded(); // Check if the car is on the ground
-        HandleMovement(); // Handle car movement
         HandleDrift(); // Handle drifting logic
+        HandleMovement(); // Handle car movement
+        HandleTurning();
     }
 
     // Get input for movement, steering, drifting, and boosting
@@ -136,7 +137,10 @@ public class CarController : MonoBehaviour
         {
             carRb.AddForce(brakeForce * Time.fixedDeltaTime * -carRb.velocity, ForceMode.Acceleration);
         }
+    }
 
+    void HandleTurning()
+    {
         // Handle turning
         float turnAmount = steerInput * turnSensitivity * (isDrifting ? driftTurnMultiplier : 1f);
         transform.Rotate(carRb.velocity.magnitude * Time.fixedDeltaTime * turnAmount * Vector3.up);
