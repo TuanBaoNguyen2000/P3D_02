@@ -1,4 +1,6 @@
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class EnemyCarAI : MonoBehaviour
 {
@@ -13,18 +15,13 @@ public class EnemyCarAI : MonoBehaviour
     public float steerAngleThreshold = 20f; // Angle at which AI starts to steer
 
     [Header("Drift Settings")]
-    public float driftAngleThreshold = 30f; // Angle at which AI starts to drift
-    public float driftDistanceThreshold = 8f; // Angle at which AI starts to drift
-    public float driftProbability = 0.3f; // Chance of drifting in suitable conditions
+    public float driftStartAngleThreshold = 30f; // Angle at which AI starts to drift
+    public float driftEndAngleThreshold = 10f; // Angle at which AI starts to drift
 
     [Header("Boost Settings")]
     public float boostDistanceThreshold = 10f; // Distance to next waypoint at which AI can't boost
     public float boostAngleThreshold = 20f; // Angle at which AI can't boost
     public float boostCooldown = 3f; // Minimum time between boost attempts
-
-    [Header("Difficulty Settings")]
-    public float difficultyLevel = 1f; // 1 = normal, < 1 = easier, > 1 = harder
-    public float errorProbability = 0.05f; // Chance of making a mistake
 
     private CarController carController;
     private int currentWaypointIndex = 0;
@@ -56,56 +53,24 @@ public class EnemyCarAI : MonoBehaviour
         if (waypoints == null || waypoints.Length == 0) return;
 
         HandleAIInputs();
-        HandleSpecialMoves();
+        HandleDrift();
+        HandleBoost();
         CheckResetCar();
     }
 
-    private void HandleSpecialMoves()
+    #region Drift
+
+    private void HandleDrift()
     {
-        // Check if we can and should drift
-        if (CanDrift())
-        {
-            Debug.Log("can");
-            TryDrift();
-        }
+        if (!carController.CanDrift()) return;
 
-        // Check if we can and should boost
-        //if (CanBoost())
-        //{
-        //    TryBoost();
-        //}
-    }
+        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
+        float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
+        bool isStartDrift = Mathf.Abs(angle) > driftStartAngleThreshold;
+        bool isEndDrift = Mathf.Abs(angle) < driftEndAngleThreshold;
 
-    private bool CanDrift()
-    {
-        // Conditions for drifting
-        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
-        Vector3 nextDirection = GetNextWaypointDirection();
-        float angleToNextWaypoint = Vector3.Angle(direction, nextDirection);
-
-         //Debug.Log(angleToNextWaypoint);
-        return carController.CanDrift() &&
-               Mathf.Abs(angleToNextWaypoint) > driftAngleThreshold;
-               
-    }
-
-    private void TryDrift()
-    {
-        // Conditions for drifting
-        Vector3 direction = transform.forward;
-        Vector3 nextDirection = GetNextWaypointDirection();
-
-        float distanceToCurrentWaypoit = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
-        bool isStartDrift = distanceToCurrentWaypoit <= driftDistanceThreshold;
-
-        float threshold = 15f;  // Adjust the threshold as needed 
-        float angle = Vector3.Angle(direction, nextDirection);
-        Debug.Log("angle: " + angle);
-        bool isEndDrift = Mathf.Abs(angle) < threshold;
-
-        //Debug.Log("distance: " + distanceToCurrentWaypoit + " ---- " + "angle: " + angle);
         // Attempt to start drifting
-        if (isStartDrift || isAttemptingDrift)
+        if (isStartDrift && !isAttemptingDrift)
         {
             Debug.Log("start");
             carController.StartDrift();
@@ -119,7 +84,9 @@ public class EnemyCarAI : MonoBehaviour
             isAttemptingDrift = false;
         }
     }
+    #endregion
 
+    #region Boost
     private bool CanBoost()
     {
         // Check boost cooldown
@@ -128,7 +95,7 @@ public class EnemyCarAI : MonoBehaviour
         // Check if the car is preparing for a turn (near a waypoint)
         Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
         Vector3 nextDirection = GetNextWaypointDirection();
-        float angleToNextWaypoint = Vector3.Angle(direction, nextDirection);
+        float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
         float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
 
         // If the angle is too sharp and too close to a waypoint, avoid boosting
@@ -138,12 +105,16 @@ public class EnemyCarAI : MonoBehaviour
         return carController.CanBoost();
     }
 
-    private void TryBoost()
+    private void HandleBoost()
     {
+        if (!CanBoost()) return;
+
         carController.StartBoost();
         lastBoostTime = Time.time;
     }
+    #endregion
 
+    #region Handle Input
     private void HandleAIInputs()
     {
         // Check if we've reached the end of the track
@@ -170,13 +141,6 @@ public class EnemyCarAI : MonoBehaviour
         // Calculate speed and movement input
         float moveAmount = CalculateMoveInput(direction);
 
-        //// Potentially introduce random errors based on difficulty
-        //if (Random.value < errorProbability * difficultyLevel)
-        //{
-        //    steerAmount += Random.Range(-0.2f, 0.2f);
-        //    moveAmount *= Random.Range(0.8f, 1.2f);
-        //}
-
         // Apply inputs to car controller
         carController.SteerInput = Mathf.Clamp(steerAmount, -1f, 1f);
         carController.MoveInput = Mathf.Clamp(moveAmount, -1f, 1f);
@@ -191,25 +155,21 @@ public class EnemyCarAI : MonoBehaviour
     private float CalculateSteeringInput(Vector3 direction)
     {
         // Calculate the signed angle between current forward direction and target direction
-        float steerInput = Vector3.SignedAngle(transform.forward, direction, Vector3.up) / 30f;
+        float steerInput = Vector3.SignedAngle(transform.forward, direction, Vector3.up) / 15f;
 
         // Apply turn sensitivity and difficulty scaling
-        return steerInput * difficultyLevel;
+        return steerInput;
     }
 
     private float CalculateMoveInput(Vector3 direction)
     {
         // Calculate angle to next waypoint to adjust speed
-        Vector3 nextDirection = GetNextWaypointDirection();
-        float angleToNextWaypoint = Vector3.Angle(direction, nextDirection);
+        float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
 
         // Reduce speed for tight corners
         float speedFactor = angleToNextWaypoint > steerAngleThreshold
             ? cornerSpeedReductionFactor
             : normalSpeedFactor;
-
-        // Scale speed by difficulty
-        speedFactor *= difficultyLevel;
 
         return speedFactor;
     }
@@ -227,17 +187,12 @@ public class EnemyCarAI : MonoBehaviour
         // Reset to start if looping, or stop if at end
         if (currentWaypointIndex >= waypoints.Length)
         {
-            if (loopTrack)
-            {
-                currentWaypointIndex = 0;
-            }
-            else
-            {
-                currentWaypointIndex = waypoints.Length - 1;
-            }
+            currentWaypointIndex = loopTrack ? 0 : waypoints.Length - 1;
         }
     }
+    #endregion
 
+    #region Reset the car when it is stuck
     float minSpeedThreshold = 1f; // Minimum speed threshold
     float stuckTimeThreshold = 3f; // Time the car needs to be stuck before resetting
     float stuckTimer = 0f; // Timer to track how long the car has been stuck
@@ -300,6 +255,8 @@ public class EnemyCarAI : MonoBehaviour
         //Apply to CAR model
         carController.ResetCar(projectedPosition, direction);
     }
+    #endregion
+
 
     // Debug visualization of current waypoint
     private void OnDrawGizmos()
@@ -310,6 +267,25 @@ public class EnemyCarAI : MonoBehaviour
         if (currentWaypointIndex < waypoints.Length)
         {
             Gizmos.DrawWireSphere(waypoints[currentWaypointIndex].position, waypointThreshold);
+        }
+
+        /////////////////////
+        Vector3 direction = transform.forward;
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(transform.position, transform.position + direction * 5f);
+
+        Vector3 nextDirection = waypoints[currentWaypointIndex].position - transform.position;
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position, transform.position + nextDirection.normalized * 5f);
+
+        float angle = Vector3.Angle(transform.forward, nextDirection);
+        GUIStyle style = new GUIStyle();
+        style.normal.textColor = Color.black; 
+        if (carController)
+        {
+            Handles.Label(transform.position + Vector3.up * 2f, $"Angle: {angle:F1}°", style);
+            Handles.Label(transform.position + Vector3.up * 4f, $"Move: {carController.MoveInput}  Steer: {carController.SteerInput}", style);
+            Handles.Label(transform.position + Vector3.up * 3f, $"Speed: {carController.CurrentSpeed:F1}°", style);
         }
     }
 }

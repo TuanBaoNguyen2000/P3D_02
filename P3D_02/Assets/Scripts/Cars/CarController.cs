@@ -60,6 +60,7 @@ public class CarController : MonoBehaviour
     public float SteerInput { get => this.steerInput; set => this.steerInput = value; }
     public bool IsGrounded { get => this.isGrounded; }
     public float CurrentBoostEnergy { get => this.currentBoostEnergy;}
+    public float CurrentSpeed { get => this.carRb.velocity.magnitude; }
     public Rigidbody CarRb { get => this.carRb; }
 
     void Start()
