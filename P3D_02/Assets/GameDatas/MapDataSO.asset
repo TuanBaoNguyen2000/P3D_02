@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b041841420859b742bb360b90ec01f9d, type: 3}
+  m_Name: MapDataSO
+  m_EditorClassIdentifier: 
+  MapDatas:
+  - trackName: Map 1
+    description: 
+    thumbnail: {fileID: 0}
+    startPositions:
+    - {x: -2, y: -0.000049114227, z: -23}
+    - {x: -2, y: -0.000049114227, z: -28}
+    - {x: -2, y: -0.000049114227, z: -33}
+    - {x: -10, y: -0.000049114227, z: -25}
+    - {x: -10, y: -0.000049114227, z: -30}
+    waypoints:
+    - {x: 0, y: 0.1, z: -31.7}
+    - {x: 130.24, y: 0.1, z: -30.05}
+    - {x: 116.6, y: 0.83, z: -53.49}
+    - {x: 44.41, y: 0.55, z: -99.82}
+    - {x: 46, y: -1, z: -126.1}
+    - {x: 61.53, y: -2.6, z: -137.88}
+    - {x: 79.8, y: -4.21, z: -134.48}
+    - {x: 107.03, y: -4.99, z: -143.06}
+    - {x: 140.463, y: -0.02, z: -172.599}
+    - {x: 141.4, y: 1.59, z: -249.5}
+    - {x: 141.2, y: 0.6, z: -293.2}
+    - {x: -101, y: 0.1, z: -294.4}
+    - {x: -179.5, y: 1.2, z: -291.1}
+    - {x: -220.2, y: 1.78, z: -273}
+    - {x: -260.23, y: 4.12, z: -234.11}
+    - {x: -284.33, y: 3.25, z: -167.95}
+    - {x: -274.9, y: 3.24, z: -106.7}
+    - {x: -233.6, y: 2.24, z: -55.7}
+    - {x: -167.42, y: 0.663, z: -27.712}
+    - {x: -18.9, y: 0.663, z: -28.42}
