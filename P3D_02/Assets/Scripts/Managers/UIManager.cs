@@ -11,9 +11,16 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private Button singlePlayBtn;
     [SerializeField] private Button multiPlayBtn;
 
-    [Header("Panels")]
+    [Header("Car Panels")]
     [SerializeField] private RectTransform gameModePanel;
+    [SerializeField] private Button nextCarBtn;
+    [SerializeField] private Button previousCarBtn;
+
+
+    [Header("Map Panels")]
     [SerializeField] private RectTransform mapPanel;
+
+    [Header("Room Panels")]
     [SerializeField] private RectTransform roomPanel;
 
     private void Start()
@@ -27,6 +34,9 @@ public class UIManager : Singleton<UIManager>
     private void ResiterEvents()
     {
         singlePlayBtn.onClick.AddListener(ChooseSingleMode);
+
+        nextCarBtn.onClick.AddListener(CarSelectionManager.Instance.SelectNextCar);
+        previousCarBtn.onClick.AddListener(CarSelectionManager.Instance.SelectPreviousCar);
     }
 
     private void UnresiterEvents()

@@ -1,15 +1,14 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "MapDataSO", menuName = "MapData/New MapDataSO")]
+[CreateAssetMenu(fileName = "MapDataSO", menuName = "My DataSO/New MapDataSO")]
 public class MapDataSO : ScriptableObject
 {
-    public List<MapData> MapDatas = new List<MapData>();
+    public List<MapData> mapDatas = new List<MapData>();
 }
 
-[Serializable]
+[System.Serializable]
 public class MapData
 {
     public string trackName;

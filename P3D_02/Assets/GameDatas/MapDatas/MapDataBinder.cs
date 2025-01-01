@@ -12,18 +12,17 @@ public class MapDataBinder : MonoBehaviour
     public Transform startPositionsParent; 
     public Transform waypointsParent;      
     public Transform finishLine;           
-    public GameObject terrain;             
 
     public void BindDataToScriptableObject()
     {
-        MapData mapData = MapDataSO.MapDatas.Find(x => x.trackName == mapName);
+        MapData mapData = MapDataSO.mapDatas.Find(x => x.trackName == mapName);
 
         if (mapData == null)
         {
             Debug.Log("Add new map data!");
             mapData = new MapData();
             mapData.trackName = mapName;
-            MapDataSO.MapDatas.Add(mapData);
+            MapDataSO.mapDatas.Add(mapData);
         }
 
         // Start Positions
