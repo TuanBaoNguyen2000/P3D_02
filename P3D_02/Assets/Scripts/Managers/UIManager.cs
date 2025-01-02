@@ -88,10 +88,10 @@ public class UIManager : Singleton<UIManager>
     {
         if (moveCoroutine != null) return;
 
-        moveCoroutine = StartCoroutine(IMoveRecTransform(uiElement, endPos, duration));
+        moveCoroutine = StartCoroutine(IEMoveRecTransform(uiElement, endPos, duration));
     }
 
-    private IEnumerator IMoveRecTransform(RectTransform uiElement, Vector2 endPos, float duration)
+    private IEnumerator IEMoveRecTransform(RectTransform uiElement, Vector2 endPos, float duration)
     {
         Vector2 startPos = uiElement.anchoredPosition;
         float elapsedTime = 0f;
