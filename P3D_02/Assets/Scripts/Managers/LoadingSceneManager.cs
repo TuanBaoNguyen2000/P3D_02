@@ -40,8 +40,8 @@ public class LoadingSceneManager : MonoBehaviour
 
             if (operation.progress >= 0.9f)
             {
-                yield return new WaitForSeconds(1f);
-                operation.allowSceneActivation = true; 
+                yield return new WaitForSeconds(0.5f);
+                operation.allowSceneActivation = true;
             }
 
             yield return null;

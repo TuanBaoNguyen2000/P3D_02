@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b041841420859b742bb360b90ec01f9d, type: 3}
   m_Name: MapDataSO
   m_EditorClassIdentifier: 
-  MapDatas:
-  - trackName: Map 1
+  mapDatas:
+  - trackName: CarSceneTest
     description: 
-    thumbnail: {fileID: 0}
+    thumbnail: {fileID: 21300000, guid: 0d6ae391445e8814385f60f0d0bdfb65, type: 3}
+    rotation: {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
     startPositions:
     - {x: -2, y: -0.000049114227, z: -23}
     - {x: -2, y: -0.000049114227, z: -28}

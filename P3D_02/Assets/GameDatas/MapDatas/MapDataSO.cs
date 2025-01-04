@@ -15,6 +15,7 @@ public class MapData
     public string description;
     public Sprite thumbnail;
 
+    public Quaternion rotation;
     public List<Vector3> startPositions;
     public List<Vector3> waypoints;
 }

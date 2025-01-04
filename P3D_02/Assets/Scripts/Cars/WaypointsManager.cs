@@ -7,6 +7,11 @@ public class WaypointsManager : MonoBehaviour
     public List<Transform> startpoints = new List<Transform>();
     public bool isShowGizmos;
 
+    private void Start()
+    {
+        GameManager.Instance.StartSinglePlayerRace(GameDataManger.MapData[0]);
+    }
+
     private void OnDrawGizmos()
     {
         DrawWaypoints();

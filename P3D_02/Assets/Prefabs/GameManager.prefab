@@ -50,5 +50,5 @@ MonoBehaviour:
   raceTimeLimit: 300
   numberOfAICars: 3
   spawnPoints: []
-  playerCarPrefab: {fileID: 0}
-  aiCarPrefab: {fileID: 0}
+  playerCarPrefab: {fileID: 3571195180529352484, guid: c63e1ca30d0db234f92175b11de54de9, type: 3}
+  aiCarPrefab: {fileID: 7341959971160743645, guid: 3c0b4afaf823cfd4fbe3f958ab9b7be4, type: 3}

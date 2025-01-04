@@ -11,7 +11,6 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private int numberOfAICars = 3;
 
     [Header("References")]
-    [SerializeField] private Transform[] spawnPoints;
     [SerializeField] private GameObject playerCarPrefab;
     [SerializeField] private GameObject aiCarPrefab;
 
@@ -28,27 +27,27 @@ public class GameManager : Singleton<GameManager>
     #region Single Player Methods
 
     // Initialize single player race
-    public void StartSinglePlayerRace()
+    public void StartSinglePlayerRace(MapData mapData)
     {
         currentGameState = GameState.Loading;
         racerDataDict.Clear();
         isRaceActive = false;
 
         // Spawn player car
-        SpawnPlayerCar();
+        SpawnPlayerCar(mapData);
 
         // Spawn AI cars
-        SpawnAICars();
+        SpawnAICars(mapData);
 
         // Start countdown
         StartCountdown();
     }
 
     // Spawn player car at first spawn point
-    private void SpawnPlayerCar()
+    private void SpawnPlayerCar(MapData mapData)
     {
-        Vector3 playerSpawnPoint = spawnPoints[0].position;
-        GameObject playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, spawnPoints[0].rotation);
+        Vector3 playerSpawnPoint = mapData.startPositions[0];
+        GameObject playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, mapData.rotation);
 
         // Initialize player data
         RacerData playerData = new RacerData
@@ -64,14 +63,14 @@ public class GameManager : Singleton<GameManager>
     }
 
     // Spawn AI cars at remaining spawn points
-    private void SpawnAICars()
+    private void SpawnAICars(MapData mapData)
     {
         for (int i = 0; i < numberOfAICars; i++)
         {
-            if (i + 1 >= spawnPoints.Length) break;
+            if (i + 1 >= mapData.startPositions.Count) break;
 
-            Vector3 aiSpawnPoint = spawnPoints[i + 1].position;
-            GameObject aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, spawnPoints[i + 1].rotation);
+            Vector3 aiSpawnPoint = mapData.startPositions[i + 1];
+            GameObject aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, mapData.rotation);
 
             // Initialize AI data
             RacerData aiData = new RacerData
@@ -388,4 +387,10 @@ public enum GameState
     Racing,
     Paused,
     RaceEnd
+}
+
+public enum GameMode
+{
+    SinglePlay,
+    MultiPlay,
 }
