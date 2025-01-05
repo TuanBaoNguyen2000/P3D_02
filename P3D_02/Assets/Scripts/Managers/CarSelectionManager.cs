@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CarSelectionManager : Singleton<CarSelectionManager>
+public class CarSelectionManager : MonoBehaviour
 {
     public List<RuntimeCarData> availableCars;
     private int currentCarIndex = 0;
