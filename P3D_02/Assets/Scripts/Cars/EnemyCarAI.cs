@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
@@ -5,7 +6,7 @@ using static UnityEngine.GraphicsBuffer;
 public class EnemyCarAI : MonoBehaviour
 {
     [Header("Waypoint Navigation")]
-    public Transform[] waypoints; // Race track waypoints
+    public List<Vector3> waypoints; // Race track waypoints
     public float waypointThreshold = 5f; // Distance to switch to next waypoint
     public bool loopTrack = true; // Whether to loop the track or stop at the end
 
@@ -39,7 +40,7 @@ public class EnemyCarAI : MonoBehaviour
         carController.isEnemy = true;
 
         // Validate waypoints
-        if (waypoints == null || waypoints.Length == 0)
+        if (waypoints == null || waypoints.Count == 0)
         {
             Debug.LogError("No waypoints set for EnemyCarAI on " + gameObject.name);
         }
@@ -50,12 +51,17 @@ public class EnemyCarAI : MonoBehaviour
 
     private void Update()
     {
-        if (waypoints == null || waypoints.Length == 0) return;
+        if (waypoints == null || waypoints.Count == 0) return;
 
         HandleAIInputs();
         HandleDrift();
         HandleBoost();
         CheckResetCar();
+    }
+
+    public void LoadWaypointData(List<Vector3> waypoints)
+    {
+        this.waypoints = waypoints;
     }
 
     #region Drift
@@ -64,7 +70,7 @@ public class EnemyCarAI : MonoBehaviour
     {
         if (!carController.CanDrift()) return;
 
-        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
+        Vector3 direction = waypoints[currentWaypointIndex] - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
         bool isStartDrift = Mathf.Abs(angle) > driftStartAngleThreshold;
         bool isEndDrift = Mathf.Abs(angle) < driftEndAngleThreshold;
@@ -93,10 +99,10 @@ public class EnemyCarAI : MonoBehaviour
         if (Time.time - lastBoostTime < boostCooldown) return false;
 
         // Check if the car is preparing for a turn (near a waypoint)
-        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
+        Vector3 direction = (waypoints[currentWaypointIndex] - transform.position).normalized;
         Vector3 nextDirection = GetNextWaypointDirection();
         float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
-        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
+        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex]);
 
         // If the angle is too sharp and too close to a waypoint, avoid boosting
         if (angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold)
@@ -118,7 +124,7 @@ public class EnemyCarAI : MonoBehaviour
     private void HandleAIInputs()
     {
         // Check if we've reached the end of the track
-        if (currentWaypointIndex >= waypoints.Length)
+        if (currentWaypointIndex >= waypoints.Count)
         {
             if (loopTrack)
             {
@@ -133,7 +139,7 @@ public class EnemyCarAI : MonoBehaviour
         }
 
         // Determine direction to next waypoint
-        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
+        Vector3 direction = (waypoints[currentWaypointIndex] - transform.position).normalized;
 
         // Calculate steering input with added difficulty variation
         float steerAmount = CalculateSteeringInput(direction);
@@ -146,7 +152,7 @@ public class EnemyCarAI : MonoBehaviour
         carController.MoveInput = Mathf.Clamp(moveAmount, -1f, 1f);
 
         // Check if we're close to the current waypoint
-        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position) < waypointThreshold)
+        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex]) < waypointThreshold)
         {
             AdvanceToNextWaypoint();
         }
@@ -176,8 +182,8 @@ public class EnemyCarAI : MonoBehaviour
 
     private Vector3 GetNextWaypointDirection()
     {
-        int nextIndex = (currentWaypointIndex + 1) % waypoints.Length;
-        return (waypoints[nextIndex].position - waypoints[currentWaypointIndex].position).normalized;
+        int nextIndex = (currentWaypointIndex + 1) % waypoints.Count;
+        return (waypoints[nextIndex] - waypoints[currentWaypointIndex]).normalized;
     }
 
     private void AdvanceToNextWaypoint()
@@ -185,9 +191,9 @@ public class EnemyCarAI : MonoBehaviour
         currentWaypointIndex++;
 
         // Reset to start if looping, or stop if at end
-        if (currentWaypointIndex >= waypoints.Length)
+        if (currentWaypointIndex >= waypoints.Count)
         {
-            currentWaypointIndex = loopTrack ? 0 : waypoints.Length - 1;
+            currentWaypointIndex = loopTrack ? 0 : waypoints.Count - 1;
         }
     }
     #endregion
@@ -238,8 +244,8 @@ public class EnemyCarAI : MonoBehaviour
 
     void ResetCar()
     {
-        Vector3 oldWaypoint = waypoints[currentWaypointIndex - 1].position;
-        Vector3 currentWaypoint = waypoints[currentWaypointIndex].position;
+        Vector3 oldWaypoint = waypoints[currentWaypointIndex - 1];
+        Vector3 currentWaypoint = waypoints[currentWaypointIndex];
         Vector3 direction = (currentWaypoint - oldWaypoint).normalized;
 
         // Calculate the projection of the car's current position on the line formed by oldWaypoint and currentWaypoint
@@ -261,12 +267,12 @@ public class EnemyCarAI : MonoBehaviour
     // Debug visualization of current waypoint
     private void OnDrawGizmos()
     {
-        if (waypoints == null || waypoints.Length == 0) return;
+        if (waypoints == null || waypoints.Count == 0) return;
 
         Gizmos.color = Color.red;
-        if (currentWaypointIndex < waypoints.Length)
+        if (currentWaypointIndex < waypoints.Count)
         {
-            Gizmos.DrawWireSphere(waypoints[currentWaypointIndex].position, waypointThreshold);
+            Gizmos.DrawWireSphere(waypoints[currentWaypointIndex], waypointThreshold);
         }
 
         /////////////////////
@@ -274,7 +280,7 @@ public class EnemyCarAI : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawLine(transform.position, transform.position + direction * 5f);
 
-        Vector3 nextDirection = waypoints[currentWaypointIndex].position - transform.position;
+        Vector3 nextDirection = waypoints[currentWaypointIndex] - transform.position;
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + nextDirection.normalized * 5f);
 

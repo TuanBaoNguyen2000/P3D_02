@@ -9,11 +9,8 @@ public interface IGameEventObserver
 
 public enum GameEventType
 {
-    HealthChanged,
-    EnergyChanged,
-    SpeedChanged,
+    BoostEnergyChanged,
     LapCompleted,
-    PositionChanged,
     CheckpointPassed
 }
 
@@ -32,5 +29,10 @@ public class GameEvent
     {
         EventType = eventType;
         EventData = eventData;
+    }
+
+    public void GetData()
+    {
+
     }
 }

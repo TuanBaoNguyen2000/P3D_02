@@ -431,7 +431,7 @@ MonoBehaviour:
   boostEnergyCapacity: 100
   currentBoostEnergy: 100
   boostConsumptionRate: 20
-  boostRecoveryRate: 10
+  boostRecoveryRate: 25
   driftSmoke: []
   tireTrails: []
   boostEffect: {fileID: 0}

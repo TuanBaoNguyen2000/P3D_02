@@ -11,8 +11,8 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private int numberOfAICars = 3;
 
     [Header("References")]
-    [SerializeField] private GameObject playerCarPrefab;
-    [SerializeField] private GameObject aiCarPrefab;
+    [SerializeField] private CarController playerCarPrefab;
+    [SerializeField] private EnemyCarAI aiCarPrefab;
 
     private UIManager uiManager => UIManager.Instance;
 
@@ -47,13 +47,13 @@ public class GameManager : Singleton<GameManager>
     private void SpawnPlayerCar(MapData mapData)
     {
         Vector3 playerSpawnPoint = mapData.startPositions[0];
-        GameObject playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, mapData.rotation);
+        CarController playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, mapData.rotation);
 
         // Initialize player data
         RacerData playerData = new RacerData
         {
             racerName = "Player",
-            racerObject = playerCar,
+            //racerObject = playerCar,
             currentLap = 0,
             isFinished = false,
             isAI = false,
@@ -70,13 +70,14 @@ public class GameManager : Singleton<GameManager>
             if (i + 1 >= mapData.startPositions.Count) break;
 
             Vector3 aiSpawnPoint = mapData.startPositions[i + 1];
-            GameObject aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, mapData.rotation);
+            EnemyCarAI aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, mapData.rotation);
+            aiCar.LoadWaypointData(mapData.waypoints);
 
             // Initialize AI data
             RacerData aiData = new RacerData
             {
                 racerName = $"AI {i + 1}",
-                racerObject = aiCar,
+                //racerObject = aiCar,
                 currentLap = 0,
                 isFinished = false,
                 isAI = true,
@@ -369,7 +370,7 @@ public class GameManager : Singleton<GameManager>
 public class RacerData
 {
     public string racerName;
-    public GameObject racerObject;
+    //public GameObject racerObject;
     public int currentLap;
     public float currentLapTime;
     public float bestLapTime;

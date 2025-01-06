@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class GameEventManager : MonoBehaviour
+public class GameEventManager : Singleton<GameEventManager>
 {
     private List<IGameEventObserver> gameEvents = new List<IGameEventObserver>();
 
@@ -21,6 +21,7 @@ public class GameEventManager : MonoBehaviour
     {
         GameEvent gameEvent = Get(eventType, eventData);
         NotifyObservers(gameEvent);
+        Return(gameEvent);
     }
 
     private void NotifyObservers(GameEvent gameEvent)

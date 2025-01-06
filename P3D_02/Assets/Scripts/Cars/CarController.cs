@@ -210,6 +210,7 @@ public class CarController : MonoBehaviour
 
         // Recover boost energy while drifting
         currentBoostEnergy = Mathf.Min(boostEnergyCapacity, currentBoostEnergy + boostRecoveryRate * Time.deltaTime);
+        GameEventManager.Instance.TriggerEvent(GameEventType.BoostEnergyChanged, currentBoostEnergy);
     }
 
     // Enable or disable visual and audio effects for drifting
@@ -266,6 +267,8 @@ public class CarController : MonoBehaviour
         {
             StopBoost();
         }
+
+        GameEventManager.Instance.TriggerEvent(GameEventType.BoostEnergyChanged, currentBoostEnergy);
     }
 
     // Enable or disable boost visual and audio effects
