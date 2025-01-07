@@ -8,28 +8,28 @@ public class CarController : MonoBehaviour
 {
     [Header("Car Settings")]
     [SerializeField] float maxSpeed = 100f; // Maximum speed of the car
-    [SerializeField] float acceleration = 500f; // Acceleration force
+    [SerializeField] float acceleration = 2500f; // Acceleration force
     [SerializeField] float brakeForce = 100f; // Braking force
-    [SerializeField] float turnSensitivity = 1.5f; // Sensitivity for steering
+    [SerializeField] float turnSensitivity = 1.6f; // Sensitivity for steering
 
     [SerializeField] float groundedRayLength = 0.5f; // Length of the ray to detect if the car is grounded
     [SerializeField] Vector3 groundedRayOffset = new Vector3(0, 0.1f, 0); // Offset for the grounded ray
     [SerializeField] LayerMask groundLayer; // Layer to detect the ground
 
     [Header("Drift Settings")]
-    [SerializeField] float driftFactor = 0.95f; // How much the car will slide during a drift
-    [SerializeField] float minSpeedToDrift = 10f; // Minimum speed required to start drifting
-    [SerializeField] float driftTurnMultiplier = 1.5f; // Steering sensitivity multiplier during drifting
-    [SerializeField] float DriftDragLoss = 0.8f; // Drag reduction during drifting
-    [SerializeField] float maxDriftAngle = 30f; // Maximum angle for drifting
-    [SerializeField] float driftLerpSpeed = 5f; // Speed to interpolate drift angle changes
+    [SerializeField] float driftFactor = 1f; // How much the car will slide during a drift
+    [SerializeField] float minSpeedToDrift = 5f; // Minimum speed required to start drifting
+    [SerializeField] float driftTurnMultiplier = 3.5f; // Steering sensitivity multiplier during drifting
+    [SerializeField] float DriftDragLoss = 0.9f; // Drag reduction during drifting
+    [SerializeField] float maxDriftAngle = 45f; // Maximum angle for drifting
+    [SerializeField] float driftLerpSpeed = 3f; // Speed to interpolate drift angle changes
 
     [Header("Boost Settings")]
     [SerializeField] float boostMaxSpeed = 200f; // Maximum speed during boost
-    [SerializeField] float boostAcceleration = 1000f; // Acceleration during boost
+    [SerializeField] float boostAcceleration = 4000f; // Acceleration during boost
     [SerializeField] float boostEnergyCapacity = 100f; // Total boost energy capacity
-    [SerializeField] float boostConsumptionRate = 15f; // How fast boost energy is consumed
-    [SerializeField] float boostRecoveryRate = 10f; // How fast boost energy recovers
+    [SerializeField] float boostConsumptionRate = 20f; // How fast boost energy is consumed
+    [SerializeField] float boostRecoveryRate = 25f; // How fast boost energy recovers
 
     [Header("Visual Effects")]
     public ParticleSystem[] driftSmoke; // Visual effects for drifting smoke
@@ -54,7 +54,6 @@ public class CarController : MonoBehaviour
     public bool IsGrounded { get; private set; }
     public float CurrentBoostEnergy { get; private set; }
     public float CurrentSpeed { get => this.carRb.velocity.magnitude; }
-    public Rigidbody CarRb { get => this.carRb; }
 
     void Start()
     {

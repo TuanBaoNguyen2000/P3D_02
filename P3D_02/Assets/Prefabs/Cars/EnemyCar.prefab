@@ -526,10 +526,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3569870819725246048}
-  - component: {fileID: 5711250186902604186}
-  - component: {fileID: 1590006523661017787}
   - component: {fileID: 8076009607037712295}
   - component: {fileID: 2654073892604962372}
+  - component: {fileID: 5711250186902604186}
+  - component: {fileID: 1590006523661017787}
   m_Layer: 0
   m_Name: EnemyCar
   m_TagString: Untagged
@@ -553,67 +553,6 @@ Transform:
   - {fileID: 2540659958854878240}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!114 &5711250186902604186
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7341959971160743645}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3da0cfca3dcd6a146832a66bb6fd19d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxSpeed: 100
-  acceleration: 2000
-  brakeForce: 100
-  turnSensitivity: 1.6
-  groundedRayLength: 0.5
-  groundedRayOffset: {x: 0, y: 0.2, z: 0}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  driftFactor: 1
-  minSpeedToDrift: 5
-  driftTurnMultiplier: 3.5
-  DriftDragLoss: 0.9
-  maxDriftAngle: 45
-  driftLerpSpeed: 3
-  boostMaxSpeed: 200
-  boostAcceleration: 3000
-  boostEnergyCapacity: 100
-  boostConsumptionRate: 20
-  boostRecoveryRate: 25
-  driftSmoke: []
-  tireTrails: []
-  boostEffect: {fileID: 0}
-  engineSound: {fileID: 0}
-  driftSound: {fileID: 0}
-  boostSound: {fileID: 0}
---- !u!114 &1590006523661017787
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7341959971160743645}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88e5ce8e31fd8ce4e92bd0bbb8924056, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  waypoints: []
-  waypointThreshold: 10
-  loopTrack: 1
-  normalSpeedFactor: 1
-  cornerSpeedReductionFactor: 0.7
-  steerAngleThreshold: 20
-  driftStartAngleThreshold: 20
-  driftEndAngleThreshold: 10
-  boostDistanceThreshold: 10
-  boostAngleThreshold: 20
-  boostCooldown: 3
 --- !u!54 &8076009607037712295
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -622,9 +561,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7341959971160743645}
   serializedVersion: 4
-  m_Mass: 100
-  m_Drag: 0.9
-  m_AngularDrag: 0.2
+  m_Mass: 450
+  m_Drag: 1
+  m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -662,6 +601,66 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 1, z: 4.5}
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &5711250186902604186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7341959971160743645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3da0cfca3dcd6a146832a66bb6fd19d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSpeed: 100
+  acceleration: 2500
+  brakeForce: 100
+  turnSensitivity: 1.6
+  groundedRayLength: 0.5
+  groundedRayOffset: {x: 0, y: 0.2, z: 0}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  driftFactor: 1
+  minSpeedToDrift: 5
+  driftTurnMultiplier: 3.5
+  DriftDragLoss: 0.9
+  maxDriftAngle: 45
+  driftLerpSpeed: 3
+  boostMaxSpeed: 200
+  boostAcceleration: 4000
+  boostEnergyCapacity: 100
+  boostConsumptionRate: 20
+  boostRecoveryRate: 25
+  driftSmoke: []
+  tireTrails: []
+  boostEffect: {fileID: 0}
+  engineSound: {fileID: 0}
+  driftSound: {fileID: 0}
+  boostSound: {fileID: 0}
+--- !u!114 &1590006523661017787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7341959971160743645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88e5ce8e31fd8ce4e92bd0bbb8924056, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waypoints: []
+  waypointThreshold: 10
+  loopTrack: 1
+  normalSpeedFactor: 1
+  cornerSpeedReductionFactor: 0.7
+  steerAngleThreshold: 20
+  driftStartAngleThreshold: 20
+  driftEndAngleThreshold: 10
+  boostDistanceThreshold: 10
+  boostAngleThreshold: 20
 --- !u!1 &8209523302169333274
 GameObject:
   m_ObjectHideFlags: 0

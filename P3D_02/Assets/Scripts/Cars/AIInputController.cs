@@ -1,23 +1,26 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.UIElements.UxmlAttributeDescription;
 
 public class AIInputController : MonoBehaviour
 {
     [Header("Waypoint Navigation")]
-    public List<Vector3> waypoints; // Race track waypoints
+    public List<Vector3> waypoints; 
     public float waypointThreshold = 5f; // Distance to switch to next waypoint
     public bool loopTrack = true; // Whether to loop the track or stop at the end
 
     [Header("AI Behavior Settings")]
-    public float normalSpeedFactor = 1f; // Speed factor for straight sections
-    public float cornerSpeedReductionFactor = 0.7f; // Speed reduction for corners
-    public float steerAngleThreshold = 20f; // Angle at which AI starts to steer
+    public float maxSpeedFactor = 1f; // Speed factor for straight sections
+    public float minSpeedFactor = 0.6f; // Speed reduction for corners
+    public float angleForMaxSpeedReduction = 20f; // Angle at which the speed is reduced to the minimum
+    public float steeringSensitivityFactor = 10f; // A factor used to scale the signed angle into a normalized steering input.
 
     [Header("Drift Settings")]
-    public float driftStartAngleThreshold = 30f; // Angle at which AI starts to drift
-    public float driftEndAngleThreshold = 10f; // Angle at which AI starts to drift
+    public float driftAngleThreshold = 30f; // Angle at which AI starts to drift
 
     [Header("Boost Settings")]
     public float boostDistanceThreshold = 10f; // Distance to next waypoint at which AI can't boost
@@ -28,7 +31,9 @@ public class AIInputController : MonoBehaviour
 
     // Drift and boost tracking
     private bool isAttemptingDrift;
-    private float driftAttemptEndTime;
+
+    private Vector3 OldWaypoint => waypoints[(currentWaypointIndex - 1 + waypoints.Count) % waypoints.Count];
+    private Vector3 CurrentWaypoint => waypoints[currentWaypointIndex];
 
     private void Start()
     {
@@ -66,7 +71,7 @@ public class AIInputController : MonoBehaviour
 
         Vector3 direction = waypoints[currentWaypointIndex] - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
-        bool isDrift = Mathf.Abs(angle) >= driftStartAngleThreshold;
+        bool isDrift = Mathf.Abs(angle) >= driftAngleThreshold;
 
         // Attempt to start drifting
         if (isDrift && !isAttemptingDrift)
@@ -144,10 +149,12 @@ public class AIInputController : MonoBehaviour
 
     private float CalculateSteeringInput(Vector3 direction)
     {
-        // Calculate the signed angle between current forward direction and target direction
-        float steerInput = Vector3.SignedAngle(transform.forward, direction, Vector3.up) / 15f;
+        Vector3 carPosition = transform.position;
+        //Vector3 carToDiection = ProjectionOnSegment(OldWaypoint, CurrentWaypoint, carPosition) - carPosition;
+        //float force = direction.magnitude;
+        float steerAngle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
 
-        return steerInput;
+        return /*force **/ steerAngle / steeringSensitivityFactor;
     }
 
     private float CalculateMoveInput(Vector3 direction)
@@ -156,9 +163,7 @@ public class AIInputController : MonoBehaviour
         float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
 
         // Reduce speed for tight corners
-        float speedFactor = angleToNextWaypoint > steerAngleThreshold
-            ? cornerSpeedReductionFactor
-            : normalSpeedFactor;
+        float speedFactor = Mathf.Lerp(maxSpeedFactor, minSpeedFactor, angleToNextWaypoint / angleForMaxSpeedReduction);
 
         return speedFactor;
     }
@@ -173,7 +178,6 @@ public class AIInputController : MonoBehaviour
     {
         currentWaypointIndex++;
 
-        // Reset to start if looping, or stop if at end
         if (currentWaypointIndex >= waypoints.Count)
         {
             currentWaypointIndex = loopTrack ? 0 : waypoints.Count - 1;
@@ -208,7 +212,7 @@ public class AIInputController : MonoBehaviour
 
         // 3. Check if the car is stuck (low speed while the player is trying to move)
         // Check if speed is below the threshold while the player is providing input
-        if (carController.CarRb.velocity.magnitude < minSpeedThreshold && Mathf.Abs(carController.MoveInput) > 0)
+        if (carController.CurrentSpeed < minSpeedThreshold && Mathf.Abs(carController.MoveInput) > 0)
         {
             stuckTimer += Time.deltaTime; // Increment the stuck timer
             if (stuckTimer > stuckTimeThreshold)
@@ -227,23 +231,33 @@ public class AIInputController : MonoBehaviour
 
     void ResetCar()
     {
-        Vector3 oldWaypoint = waypoints[currentWaypointIndex - 1];
-        Vector3 currentWaypoint = waypoints[currentWaypointIndex];
-        Vector3 direction = (currentWaypoint - oldWaypoint).normalized;
-
-        // Calculate the projection of the car's current position on the line formed by oldWaypoint and currentWaypoint
         Vector3 carPosition = transform.position;
-        Vector3 carToOldWaypoint = carPosition - oldWaypoint;
 
-        // Calculate the dot product to find the projection scalar (the distance along the direction vector)
-        float projectionScalar = Vector3.Dot(carToOldWaypoint, direction);
+        Vector3 projectedPosition = ProjectionOnSegment(OldWaypoint, CurrentWaypoint , carPosition);
 
-        // Calculate the projected position of the car on the line
-        Vector3 projectedPosition = oldWaypoint + direction * projectionScalar;
+        Vector3 direction = (CurrentWaypoint - OldWaypoint).normalized;
 
-        //Apply to CAR model
         carController.ResetCar(projectedPosition, direction);
     }
+
+    Vector3 ProjectionOnSegment(Vector3 segmentStart, Vector3 segmentEnd, Vector3 point)
+    {
+        Vector3 direction = (segmentEnd - segmentStart).normalized;
+        Vector3 pointToStart = point - segmentStart;
+
+        // Calculate the dot product to find the projection scalar (the distance along the direction vector)
+        float projectionScalar = Vector3.Dot(pointToStart, direction);
+
+        // Calculate the projected position of the car on the line
+        return segmentStart + direction * projectionScalar;
+    }
+
+    float DistanceToSegment(Vector3 segmentStart, Vector3 segmentEnd, Vector3 point)
+    {
+        Vector3 projectedPosition = ProjectionOnSegment(segmentStart, segmentEnd, point);
+        return Vector3.Distance(point, projectedPosition);
+    }
+
     #endregion
 
 
@@ -267,14 +281,14 @@ public class AIInputController : MonoBehaviour
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + nextDirection.normalized * 5f);
 
-        float angle = Vector3.Angle(transform.forward, nextDirection);
+        float angle = Vector3.SignedAngle(transform.forward, nextDirection, Vector3.up);
         GUIStyle style = new GUIStyle();
         style.normal.textColor = Color.black; 
         if (carController)
         {
             Handles.Label(transform.position + Vector3.up * 2f, $"Angle: {angle:F1}°", style);
-            Handles.Label(transform.position + Vector3.up * 4f, $"Move: {carController.MoveInput}  Steer: {carController.SteerInput}", style);
-            Handles.Label(transform.position + Vector3.up * 3f, $"Speed: {carController.CurrentSpeed:F1}°", style);
+            Handles.Label(transform.position + Vector3.up * 3f, $"Speed: {carController.CurrentSpeed:F1}", style);
+            Handles.Label(transform.position + Vector3.up * 4f, $"Move: {carController.MoveInput:F1}   Steer: {carController.SteerInput:F1}", style);
         }
     }
 }
