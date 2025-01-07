@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
-public class EnemyCarAI : MonoBehaviour
+public class AIInputController : MonoBehaviour
 {
     [Header("Waypoint Navigation")]
     public List<Vector3> waypoints; // Race track waypoints
@@ -22,22 +22,17 @@ public class EnemyCarAI : MonoBehaviour
     [Header("Boost Settings")]
     public float boostDistanceThreshold = 10f; // Distance to next waypoint at which AI can't boost
     public float boostAngleThreshold = 20f; // Angle at which AI can't boost
-    public float boostCooldown = 3f; // Minimum time between boost attempts
 
     private CarController carController;
     private int currentWaypointIndex = 0;
 
     // Drift and boost tracking
-    private float lastBoostTime;
     private bool isAttemptingDrift;
     private float driftAttemptEndTime;
 
     private void Start()
     {
         carController = GetComponent<CarController>();
-
-        // Ensure the car is marked as an enemy
-        carController.isEnemy = true;
 
         // Validate waypoints
         if (waypoints == null || waypoints.Count == 0)
@@ -46,7 +41,6 @@ public class EnemyCarAI : MonoBehaviour
         }
 
         // Initialize last boost time
-        lastBoostTime = -boostCooldown;
     }
 
     private void Update()
@@ -68,24 +62,23 @@ public class EnemyCarAI : MonoBehaviour
 
     private void HandleDrift()
     {
-        if (!carController.CanDrift()) return;
+        if (!carController.CanDrift) return;
 
         Vector3 direction = waypoints[currentWaypointIndex] - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
-        bool isStartDrift = Mathf.Abs(angle) > driftStartAngleThreshold;
-        bool isEndDrift = Mathf.Abs(angle) < driftEndAngleThreshold;
+        bool isDrift = Mathf.Abs(angle) >= driftStartAngleThreshold;
 
         // Attempt to start drifting
-        if (isStartDrift && !isAttemptingDrift)
+        if (isDrift && !isAttemptingDrift)
         {
-            Debug.Log("start");
+            //Debug.Log("START DRIFT");
             carController.StartDrift();
             isAttemptingDrift = true;
         }
 
-        if (isEndDrift && isAttemptingDrift)
+        if (!isDrift && isAttemptingDrift)
         {
-            Debug.Log("STOP");
+            //Debug.Log("STOP DRIFT");
             carController.StopDrift();
             isAttemptingDrift = false;
         }
@@ -93,10 +86,9 @@ public class EnemyCarAI : MonoBehaviour
     #endregion
 
     #region Boost
-    private bool CanBoost()
+    private void HandleBoost()
     {
-        // Check boost cooldown
-        if (Time.time - lastBoostTime < boostCooldown) return false;
+        if (!carController.CanBoost) return;
 
         // Check if the car is preparing for a turn (near a waypoint)
         Vector3 direction = (waypoints[currentWaypointIndex] - transform.position).normalized;
@@ -105,18 +97,13 @@ public class EnemyCarAI : MonoBehaviour
         float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex]);
 
         // If the angle is too sharp and too close to a waypoint, avoid boosting
-        if (angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold)
-            return false;
+        bool isBoost = angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold;
 
-        return carController.CanBoost();
-    }
-
-    private void HandleBoost()
-    {
-        if (!CanBoost()) return;
-
-        carController.StartBoost();
-        lastBoostTime = Time.time;
+        if (isBoost)
+        {
+            Debug.Log("BOOST");
+            carController.StartBoost();
+        }
     }
     #endregion
 
@@ -141,10 +128,7 @@ public class EnemyCarAI : MonoBehaviour
         // Determine direction to next waypoint
         Vector3 direction = (waypoints[currentWaypointIndex] - transform.position).normalized;
 
-        // Calculate steering input with added difficulty variation
         float steerAmount = CalculateSteeringInput(direction);
-
-        // Calculate speed and movement input
         float moveAmount = CalculateMoveInput(direction);
 
         // Apply inputs to car controller
@@ -163,7 +147,6 @@ public class EnemyCarAI : MonoBehaviour
         // Calculate the signed angle between current forward direction and target direction
         float steerInput = Vector3.SignedAngle(transform.forward, direction, Vector3.up) / 15f;
 
-        // Apply turn sensitivity and difficulty scaling
         return steerInput;
     }
 

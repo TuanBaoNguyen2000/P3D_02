@@ -28,7 +28,6 @@ public class CarController : MonoBehaviour
     [SerializeField] float boostMaxSpeed = 200f; // Maximum speed during boost
     [SerializeField] float boostAcceleration = 1000f; // Acceleration during boost
     [SerializeField] float boostEnergyCapacity = 100f; // Total boost energy capacity
-    [SerializeField] float currentBoostEnergy = 10f; // Current amount of boost energy
     [SerializeField] float boostConsumptionRate = 15f; // How fast boost energy is consumed
     [SerializeField] float boostRecoveryRate = 10f; // How fast boost energy recovers
 
@@ -42,30 +41,25 @@ public class CarController : MonoBehaviour
     public AudioSource driftSound; // Sound effect for drifting
     public AudioSource boostSound; // Sound effect for boosting
 
-    [Header("AI")]
-    public bool isEnemy = false; // Flag to indicate if the car is controlled by AI
-
     // Private variables for internal state
-    private Rigidbody carRb; // Rigidbody of the car
-    private float moveInput; // Input for forward/backward movement
-    private float steerInput; // Input for steering
-    private bool isDrifting; // Whether the car is currently drifting
-    private bool isBoosting; // Whether the car is currently boosting
-    private bool isGrounded; // Whether the car is grounded
-    private float currentDriftAngle; // Current angle of drifting
-    private float initialDragValue; // Initial drag value for resetting after drifting
+    private Rigidbody carRb; 
+    private bool isDrifting; 
+    private bool isBoosting; 
+    private float currentDriftAngle; 
+    private float initialDragValue; 
 
     // Properties to expose 
-    public float MoveInput { get => this.moveInput; set => this.moveInput = value; }
-    public float SteerInput { get => this.steerInput; set => this.steerInput = value; }
-    public bool IsGrounded { get => this.isGrounded; }
-    public float CurrentBoostEnergy { get => this.currentBoostEnergy;}
+    public float MoveInput { get; set; }
+    public float SteerInput { get; set; }
+    public bool IsGrounded { get; private set; }
+    public float CurrentBoostEnergy { get; private set; }
     public float CurrentSpeed { get => this.carRb.velocity.magnitude; }
     public Rigidbody CarRb { get => this.carRb; }
 
     void Start()
     {
         SetupComponents();
+        CurrentBoostEnergy = 100;
     }
 
     // Initialize components and variables
@@ -80,52 +74,26 @@ public class CarController : MonoBehaviour
 
     void Update()
     {
-        // Get player input if the car is not AI-controlled
-        if (!isEnemy) GetInputs();
-
-        HandleBoost(); // Handle boost logic
+        HandleBoost(); 
     }
 
     void FixedUpdate()
     {
-        CheckGrounded(); // Check if the car is on the ground
-        HandleDrift(); // Handle drifting logic
-        HandleMovement(); // Handle car movement
+        CheckGrounded(); 
+        HandleDrift(); 
+        HandleMovement();
         HandleTurning();
-    }
-
-    // Get input for movement, steering, drifting, and boosting
-    void GetInputs()
-    {
-        moveInput = Input.GetAxis("Vertical");
-        steerInput = Input.GetAxis("Horizontal");
-
-        // Handle drift input
-        if (Input.GetKey(KeyCode.Space) && CanDrift())
-        {
-            StartDrift();
-        }
-        else if (isDrifting)
-        {
-            StopDrift();
-        }
-
-        // Handle boost input
-        if (Input.GetKeyDown(KeyCode.LeftShift) && CanBoost())
-        {
-            StartBoost();
-        }
     }
 
     // Handle forward movement, braking, and turning
     void HandleMovement()
     {
-        if (!isGrounded) return;
+        if (!IsGrounded) return;
 
         // Calculate forward force
         float currentMaxSpeed = isBoosting ? boostMaxSpeed : maxSpeed;
         float currentAcceleration = isBoosting ? boostAcceleration : acceleration;
-        Vector3 forwardForce = (isDrifting ? currentAcceleration * 0.8f : currentAcceleration) * moveInput * transform.forward;
+        Vector3 forwardForce = (isDrifting ? currentAcceleration * 0.8f : currentAcceleration) * MoveInput * transform.forward;
 
         // Apply force if under max speed
         if (carRb.velocity.magnitude < currentMaxSpeed)
@@ -134,7 +102,7 @@ public class CarController : MonoBehaviour
         }
 
         // Handle braking
-        if (moveInput < 0)
+        if (MoveInput < 0)
         {
             carRb.AddForce(brakeForce * Time.fixedDeltaTime * -carRb.velocity, ForceMode.Acceleration);
         }
@@ -143,14 +111,14 @@ public class CarController : MonoBehaviour
     void HandleTurning()
     {
         // Handle turning
-        float turnAmount = steerInput * turnSensitivity * (isDrifting ? driftTurnMultiplier : 1f);
+        float turnAmount = SteerInput * turnSensitivity * (isDrifting ? driftTurnMultiplier : 1f);
         transform.Rotate(carRb.velocity.magnitude * Time.fixedDeltaTime * turnAmount * Vector3.up);
     }
 
     // Check if the car is on the ground
     void CheckGrounded()
     {
-        isGrounded = Physics.Raycast(transform.position + groundedRayOffset, -transform.up, groundedRayLength, groundLayer);
+        IsGrounded = Physics.Raycast(transform.position + groundedRayOffset, -transform.up, groundedRayLength, groundLayer);
     }
 
     public void ResetCar(Vector3 position, Vector3 direction)
@@ -172,15 +140,14 @@ public class CarController : MonoBehaviour
 
     #region Drift 
     // Check if drifting is allowed
-    public bool CanDrift()
-    {
-        return isGrounded && carRb.velocity.magnitude > minSpeedToDrift;
-    }
+    public bool CanDrift => IsGrounded && carRb.velocity.magnitude > minSpeedToDrift;
 
     // Start drifting
     public void StartDrift()
     {
+        if (!CanDrift) return;
         if (isDrifting) return;
+
         isDrifting = true;
         carRb.drag = initialDragValue * DriftDragLoss;
         EnableDriftEffects(true);
@@ -189,6 +156,8 @@ public class CarController : MonoBehaviour
     // Stop drifting
     public void StopDrift()
     {
+        if (!isDrifting) return;
+
         isDrifting = false;
         carRb.drag = initialDragValue;
         currentDriftAngle = 0f;
@@ -200,17 +169,24 @@ public class CarController : MonoBehaviour
     {
         if (!isDrifting) return;
 
+        if (!CanDrift) StopDrift();
+
+
         // Calculate target drift angle
-        float targetDriftAngle = steerInput * maxDriftAngle;
+        float targetDriftAngle = SteerInput * maxDriftAngle;
         currentDriftAngle = Mathf.Lerp(currentDriftAngle, targetDriftAngle, Time.fixedDeltaTime * driftLerpSpeed);
+        if (currentDriftAngle == 0) return;
+
+        float speed = carRb.velocity.magnitude;
+        float lateralAcceleration = Mathf.Pow(speed, 2) / currentDriftAngle;
 
         // Apply lateral drift force
-        Vector3 driftForce = transform.right * currentDriftAngle * driftFactor;
-        carRb.AddForce(driftForce * Time.fixedDeltaTime, ForceMode.VelocityChange);
+        Vector3 driftForce = transform.right * lateralAcceleration * driftFactor;
+        carRb.AddForce(driftForce * Time.fixedDeltaTime, ForceMode.Acceleration);
 
         // Recover boost energy while drifting
-        currentBoostEnergy = Mathf.Min(boostEnergyCapacity, currentBoostEnergy + boostRecoveryRate * Time.deltaTime);
-        GameEventManager.Instance.TriggerEvent(GameEventType.BoostEnergyChanged, currentBoostEnergy);
+        CurrentBoostEnergy = Mathf.Min(boostEnergyCapacity, CurrentBoostEnergy + boostRecoveryRate * Time.deltaTime);
+        //GameEventManager.Instance.TriggerEvent(GameEventType.BoostEnergyChanged, CurrentBoostEnergy);
     }
 
     // Enable or disable visual and audio effects for drifting
@@ -237,14 +213,12 @@ public class CarController : MonoBehaviour
 
     #region Boost
     // Check if boosting is allowed
-    public bool CanBoost()
-    {
-        return currentBoostEnergy >= boostConsumptionRate && !isBoosting;
-    }
+    public bool CanBoost => CurrentBoostEnergy >= boostConsumptionRate && !isBoosting;
 
     // Start boosting
     public void StartBoost()
     {
+        if (!CanBoost) return;
         isBoosting = true;
         EnableBoostEffects(true);
     }
@@ -261,14 +235,14 @@ public class CarController : MonoBehaviour
     {
         if (!isBoosting) return;
 
-        currentBoostEnergy -= boostConsumptionRate * Time.deltaTime;
+        CurrentBoostEnergy -= boostConsumptionRate * Time.deltaTime;
 
-        if (currentBoostEnergy <= 0)
+        if (CurrentBoostEnergy <= 0)
         {
             StopBoost();
         }
 
-        GameEventManager.Instance.TriggerEvent(GameEventType.BoostEnergyChanged, currentBoostEnergy);
+        //GameEventManager.Instance.TriggerEvent(GameEventType.BoostEnergyChanged, CurrentBoostEnergy);
     }
 
     // Enable or disable boost visual and audio effects
@@ -294,7 +268,7 @@ public class CarController : MonoBehaviour
     void OnDrawGizmos()
     {
         // Draw a ray for grounded check
-        Gizmos.color = isGrounded ? Color.green : Color.red;
+        Gizmos.color = IsGrounded ? Color.green : Color.red;
         Vector3 rayStart = transform.position + groundedRayOffset;
         Vector3 rayEnd = rayStart + Vector3.down * groundedRayLength;
         Gizmos.DrawLine(rayStart, rayEnd);
@@ -308,7 +282,7 @@ public class CarController : MonoBehaviour
         }
 
         // forward force
-        Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * moveInput * transform.forward;
+        Vector3 forwardForce = (isDrifting ? acceleration * 0.8f : acceleration) * MoveInput * transform.forward;
         Gizmos.color = Color.green; 
         Gizmos.DrawLine(transform.position, transform.position + forwardForce * 2); 
 
@@ -321,7 +295,7 @@ public class CarController : MonoBehaviour
         }
 
         // brake force
-        if (moveInput < 0)
+        if (MoveInput < 0)
         {
             Vector3 brakeForce = this.brakeForce * -carRb.velocity * Time.fixedDeltaTime;
             Gizmos.color = Color.red;  

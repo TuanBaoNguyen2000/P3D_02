@@ -12,7 +12,7 @@ public class GameManager : Singleton<GameManager>
 
     [Header("References")]
     [SerializeField] private CarController playerCarPrefab;
-    [SerializeField] private EnemyCarAI aiCarPrefab;
+    [SerializeField] private AIInputController aiCarPrefab;
 
     private UIManager uiManager => UIManager.Instance;
 
@@ -70,7 +70,7 @@ public class GameManager : Singleton<GameManager>
             if (i + 1 >= mapData.startPositions.Count) break;
 
             Vector3 aiSpawnPoint = mapData.startPositions[i + 1];
-            EnemyCarAI aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, mapData.rotation);
+            AIInputController aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, mapData.rotation);
             aiCar.LoadWaypointData(mapData.waypoints);
 
             // Initialize AI data

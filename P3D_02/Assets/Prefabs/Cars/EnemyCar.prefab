@@ -583,7 +583,6 @@ MonoBehaviour:
   boostMaxSpeed: 200
   boostAcceleration: 3000
   boostEnergyCapacity: 100
-  currentBoostEnergy: 100
   boostConsumptionRate: 20
   boostRecoveryRate: 25
   driftSmoke: []
@@ -592,7 +591,6 @@ MonoBehaviour:
   engineSound: {fileID: 0}
   driftSound: {fileID: 0}
   boostSound: {fileID: 0}
-  isEnemy: 0
 --- !u!114 &1590006523661017787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -605,27 +603,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88e5ce8e31fd8ce4e92bd0bbb8924056, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waypoints:
-  - {x: 6.8982417e-34, y: 1.012e-42, z: 1.6985185e+22}
-  - {x: 0.00000021363383, y: 1.162397e-37, z: 1.009e-42}
-  - {x: 4.6e-44, y: 0.000002699916, z: 6.8982417e-34}
-  - {x: 1.012e-42, y: 6.8975364e-34, z: 1.012e-42}
-  - {x: 1.1624006e-37, y: 1.009e-42, z: 6.9e-44}
-  - {x: 0, y: 6.8982417e-34, z: 1.012e-42}
-  - {x: 6.8975364e-34, y: 1.012e-42, z: 6.8977568e-34}
-  - {x: 1.012e-42, y: 5898324, z: 0.060111515}
-  - {x: 1.1624042e-37, y: 1.009e-42, z: 9.1e-44}
-  - {x: 0, y: 6.8982417e-34, z: 1.012e-42}
-  - {x: 6.8975364e-34, y: 1.012e-42, z: 6.8977568e-34}
-  - {x: 1.012e-42, y: 6.897801e-34, z: 1.012e-42}
-  - {x: 1.1624096e-37, y: 1.009e-42, z: 1.36e-43}
-  - {x: 1e-45, y: 6.8982417e-34, z: 1.012e-42}
-  - {x: 6.8975364e-34, y: 1.012e-42, z: 6.8977568e-34}
-  - {x: 1.012e-42, y: 6.897801e-34, z: 1.012e-42}
-  - {x: 6.8981976e-34, y: 1.012e-42, z: 6.897845e-34}
-  - {x: 1.012e-42, y: 1.162415e-37, z: 1.009e-42}
-  - {x: 2.03e-43, y: 0, z: 6.8982417e-34}
-  - {x: 1.012e-42, y: 6.8975364e-34, z: 1.012e-42}
+  waypoints: []
   waypointThreshold: 10
   loopTrack: 1
   normalSpeedFactor: 1
