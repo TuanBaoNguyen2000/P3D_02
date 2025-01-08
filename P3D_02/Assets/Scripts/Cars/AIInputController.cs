@@ -137,8 +137,8 @@ public class AIInputController : MonoBehaviour
         float moveAmount = CalculateMoveInput(direction);
 
         // Apply inputs to car controller
-        carController.SteerInput = Mathf.Clamp(steerAmount, -1f, 1f);
-        carController.MoveInput = Mathf.Clamp(moveAmount, -1f, 1f);
+        carController.SteerInput = steerAmount;
+        carController.MoveInput = moveAmount;
 
         // Check if we're close to the current waypoint
         if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex]) < waypointThreshold)
@@ -149,23 +149,18 @@ public class AIInputController : MonoBehaviour
 
     private float CalculateSteeringInput(Vector3 direction)
     {
-        Vector3 carPosition = transform.position;
-        //Vector3 carToDiection = ProjectionOnSegment(OldWaypoint, CurrentWaypoint, carPosition) - carPosition;
-        //float force = direction.magnitude;
         float steerAngle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
 
-        return /*force **/ steerAngle / steeringSensitivityFactor;
+        return Mathf.Clamp(steerAngle / steeringSensitivityFactor, -1f, 1f);
     }
 
     private float CalculateMoveInput(Vector3 direction)
     {
-        // Calculate angle to next waypoint to adjust speed
         float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
 
-        // Reduce speed for tight corners
-        float speedFactor = Mathf.Lerp(maxSpeedFactor, minSpeedFactor, angleToNextWaypoint / angleForMaxSpeedReduction);
+        float angleFactor = Mathf.Lerp(maxSpeedFactor, minSpeedFactor, angleToNextWaypoint / angleForMaxSpeedReduction);
 
-        return speedFactor;
+        return Mathf.Clamp(angleFactor , 0.3f, 1f);
     }
 
     private Vector3 GetNextWaypointDirection()

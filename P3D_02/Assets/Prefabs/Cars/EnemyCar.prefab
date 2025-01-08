@@ -654,11 +654,11 @@ MonoBehaviour:
   waypoints: []
   waypointThreshold: 10
   loopTrack: 1
-  normalSpeedFactor: 1
-  cornerSpeedReductionFactor: 0.7
-  steerAngleThreshold: 20
-  driftStartAngleThreshold: 20
-  driftEndAngleThreshold: 10
+  maxSpeedFactor: 1
+  minSpeedFactor: 0.5
+  angleForMaxSpeedReduction: 20
+  steeringSensitivityFactor: 10
+  driftAngleThreshold: 20
   boostDistanceThreshold: 10
   boostAngleThreshold: 20
 --- !u!1 &8209523302169333274
