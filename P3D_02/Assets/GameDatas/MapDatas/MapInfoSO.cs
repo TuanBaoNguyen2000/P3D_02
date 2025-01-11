@@ -3,19 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MapDataSO", menuName = "My DataSO/New MapDataSO")]
-public class MapDataSO : ScriptableObject
+public class MapInfoSO : ScriptableObject
 {
-    public List<MapData> mapDatas = new List<MapData>();
+    public List<MapInfo> mapDatas = new List<MapInfo>();
 }
 
 [System.Serializable]
-public class MapData
+public class MapInfo
 {
     public string trackName;
     public string description;
     public Sprite thumbnail;
-
-    public Quaternion rotation;
-    public List<Vector3> startPositions;
-    public List<Vector3> waypoints;
 }

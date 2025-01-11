@@ -18,7 +18,7 @@ public class MapOption : MonoBehaviour
         btn.onClick.AddListener(OnClick);
     }
 
-    public void Init(MapData data)
+    public void Init(MapInfo data)
     {
         mapName.text = data.trackName;
         mapImg.sprite = data.thumbnail;

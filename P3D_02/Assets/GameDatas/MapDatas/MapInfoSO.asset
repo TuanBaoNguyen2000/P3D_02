@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b041841420859b742bb360b90ec01f9d, type: 3}
-  m_Name: MapDataSO
+  m_Name: MapInfoSO
   m_EditorClassIdentifier: 
   mapDatas:
   - trackName: CarSceneTest

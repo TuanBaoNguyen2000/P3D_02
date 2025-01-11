@@ -17,6 +17,7 @@ public class GameManager : Singleton<GameManager>
     private UIManager uiManager => UIManager.Instance;
 
     private GameState currentGameState;
+    private MapManager currentMap;
 
     // Race data
     private float raceTimer;
@@ -26,8 +27,13 @@ public class GameManager : Singleton<GameManager>
 
     #region Single Player Methods
 
+    public void LoadMapData(MapManager map)
+    {
+        this.currentMap = map;
+    }
+
     // Initialize single player race
-    public void StartSinglePlayerRace(MapData mapData)
+    public void StartSinglePlayerRace(MapInfo mapData)
     {
         currentGameState = GameState.Loading;
         racerDataDict.Clear();
@@ -44,10 +50,10 @@ public class GameManager : Singleton<GameManager>
     }
 
     // Spawn player car at first spawn point
-    private void SpawnPlayerCar(MapData mapData)
+    private void SpawnPlayerCar(MapInfo mapData)
     {
-        Vector3 playerSpawnPoint = mapData.startPositions[0];
-        CarController playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, mapData.rotation);
+        Vector3 playerSpawnPoint = currentMap.startpoints[0].position;
+        CarController playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, currentMap.startRotation);
 
         // Initialize player data
         RacerData playerData = new RacerData
@@ -63,15 +69,15 @@ public class GameManager : Singleton<GameManager>
     }
 
     // Spawn AI cars at remaining spawn points
-    private void SpawnAICars(MapData mapData)
+    private void SpawnAICars(MapInfo mapData)
     {
         for (int i = 0; i < numberOfAICars; i++)
         {
-            if (i + 1 >= mapData.startPositions.Count) break;
+            if (i + 1 >= currentMap.startpoints.Count) break;
 
-            Vector3 aiSpawnPoint = mapData.startPositions[i + 1];
-            AIInputController aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, mapData.rotation);
-            aiCar.LoadWaypointData(mapData.waypoints);
+            Vector3 aiSpawnPoint = currentMap.startpoints[i + 1].position;
+            AIInputController aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, currentMap.startRotation);
+            aiCar.LoadWaypointData(currentMap.waypoints);
 
             // Initialize AI data
             RacerData aiData = new RacerData

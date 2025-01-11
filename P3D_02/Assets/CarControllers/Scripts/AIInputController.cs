@@ -9,7 +9,7 @@ using static UnityEngine.UIElements.UxmlAttributeDescription;
 public class AIInputController : MonoBehaviour
 {
     [Header("Waypoint Navigation")]
-    public List<Vector3> waypoints; 
+    public List<Transform> waypoints; 
     public float waypointThreshold = 5f; // Distance to switch to next waypoint
     public bool loopTrack = true; // Whether to loop the track or stop at the end
 
@@ -32,8 +32,8 @@ public class AIInputController : MonoBehaviour
     // Drift and boost tracking
     private bool isAttemptingDrift;
 
-    private Vector3 OldWaypoint => waypoints[(currentWaypointIndex - 1 + waypoints.Count) % waypoints.Count];
-    private Vector3 CurrentWaypoint => waypoints[currentWaypointIndex];
+    private Vector3 OldWaypoint => waypoints[(currentWaypointIndex - 1 + waypoints.Count) % waypoints.Count].position;
+    private Vector3 CurrentWaypoint => waypoints[currentWaypointIndex].position;
 
     private void Start()
     {
@@ -58,7 +58,7 @@ public class AIInputController : MonoBehaviour
         CheckResetCar();
     }
 
-    public void LoadWaypointData(List<Vector3> waypoints)
+    public void LoadWaypointData(List<Transform> waypoints)
     {
         this.waypoints = waypoints;
     }
@@ -69,7 +69,7 @@ public class AIInputController : MonoBehaviour
     {
         if (!carController.CanDrift) return;
 
-        Vector3 direction = waypoints[currentWaypointIndex] - transform.position;
+        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
         bool isDrift = Mathf.Abs(angle) >= driftAngleThreshold;
 
@@ -96,10 +96,10 @@ public class AIInputController : MonoBehaviour
         if (!carController.CanBoost) return;
 
         // Check if the car is preparing for a turn (near a waypoint)
-        Vector3 direction = (waypoints[currentWaypointIndex] - transform.position).normalized;
+        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
         Vector3 nextDirection = GetNextWaypointDirection();
         float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
-        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex]);
+        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
 
         // If the angle is too sharp and too close to a waypoint, avoid boosting
         bool isBoost = angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold;
@@ -131,7 +131,7 @@ public class AIInputController : MonoBehaviour
         }
 
         // Determine direction to next waypoint
-        Vector3 direction = (waypoints[currentWaypointIndex] - transform.position).normalized;
+        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
 
         float steerAmount = CalculateSteeringInput(direction);
         float moveAmount = CalculateMoveInput(direction);
@@ -141,7 +141,7 @@ public class AIInputController : MonoBehaviour
         carController.MoveInput = moveAmount;
 
         // Check if we're close to the current waypoint
-        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex]) < waypointThreshold)
+        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position) < waypointThreshold)
         {
             AdvanceToNextWaypoint();
         }
@@ -166,7 +166,7 @@ public class AIInputController : MonoBehaviour
     private Vector3 GetNextWaypointDirection()
     {
         int nextIndex = (currentWaypointIndex + 1) % waypoints.Count;
-        return (waypoints[nextIndex] - waypoints[currentWaypointIndex]).normalized;
+        return (waypoints[nextIndex].position - waypoints[currentWaypointIndex].position).normalized;
     }
 
     private void AdvanceToNextWaypoint()
@@ -264,7 +264,7 @@ public class AIInputController : MonoBehaviour
         Gizmos.color = Color.red;
         if (currentWaypointIndex < waypoints.Count)
         {
-            Gizmos.DrawWireSphere(waypoints[currentWaypointIndex], waypointThreshold);
+            Gizmos.DrawWireSphere(waypoints[currentWaypointIndex].position, waypointThreshold);
         }
 
         /////////////////////
@@ -272,7 +272,7 @@ public class AIInputController : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawLine(transform.position, transform.position + direction * 5f);
 
-        Vector3 nextDirection = waypoints[currentWaypointIndex] - transform.position;
+        Vector3 nextDirection = waypoints[currentWaypointIndex].position - transform.position;
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + nextDirection.normalized * 5f);
 

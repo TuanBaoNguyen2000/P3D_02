@@ -8,8 +8,8 @@ public class GameDataManger : Singleton<GameDataManger>
     [SerializeField] private CarDataSO carDataSO;
     internal static List<CarData> CarBaseData => Instance.carDataSO.listCarData;
 
-    [SerializeField] private MapDataSO mapDataSO;
-    internal static List<MapData> MapData => Instance.mapDataSO.mapDatas;
+    [SerializeField] private MapInfoSO mapDataSO;
+    internal static List<MapInfo> MapData => Instance.mapDataSO.mapDatas;
 
 
 }
