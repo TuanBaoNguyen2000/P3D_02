@@ -3,18 +3,25 @@ using UnityEditor;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
-public class PlayerInputController : MonoBehaviour
+public class PlayerCar : MonoBehaviour
 {
     private CarController carController;
 
     public float boost;
 
-    void Start()
+    internal bool EnableControl { get; set; }  
+
+    void Awake()
     {
         carController = GetComponent<CarController>();
     }
 
     void Update()
+    {
+        if(EnableControl) HandleInput();
+    }
+    
+    private void HandleInput()
     {
         float moveInput = Input.GetAxis("Vertical");
         float steerInput = Input.GetAxis("Horizontal");

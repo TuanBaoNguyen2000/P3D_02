@@ -18,6 +18,11 @@ public class HUD : MonoBehaviour, IGameEventObserver
         GameEventManager.Instance.RemoveObserver(this);
     }
 
+    public void ShowPanel(bool isShow)
+    {
+        gameObject.SetActive(isShow);
+    }
+
     public void OnGameEventOccurred(GameEvent gameEvent)
     {
         if (gameEvent.EventType != GameEventType.BoostEnergyChanged) return;

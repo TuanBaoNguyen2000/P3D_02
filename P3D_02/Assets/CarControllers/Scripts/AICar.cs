@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.UIElements.UxmlAttributeDescription;
 
-public class AIInputController : MonoBehaviour
+public class AICar : MonoBehaviour
 {
     [Header("Waypoint Navigation")]
     public List<Transform> waypoints; 
@@ -35,6 +35,9 @@ public class AIInputController : MonoBehaviour
     private Vector3 OldWaypoint => waypoints[(currentWaypointIndex - 1 + waypoints.Count) % waypoints.Count].position;
     private Vector3 CurrentWaypoint => waypoints[currentWaypointIndex].position;
 
+
+    internal bool EnableControl { get; set; }
+
     private void Start()
     {
         carController = GetComponent<CarController>();
@@ -50,9 +53,12 @@ public class AIInputController : MonoBehaviour
 
     private void Update()
     {
-        if (waypoints == null || waypoints.Count == 0) return;
+        if (EnableControl) HandleInput();
+    }
 
-        HandleAIInputs();
+    private void HandleInput()
+    {
+        HandleMoveInput();
         HandleDrift();
         HandleBoost();
         CheckResetCar();
@@ -62,58 +68,8 @@ public class AIInputController : MonoBehaviour
     {
         this.waypoints = waypoints;
     }
-
-    #region Drift
-
-    private void HandleDrift()
-    {
-        if (!carController.CanDrift) return;
-
-        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
-        float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
-        bool isDrift = Mathf.Abs(angle) >= driftAngleThreshold;
-
-        // Attempt to start drifting
-        if (isDrift && !isAttemptingDrift)
-        {
-            //Debug.Log("START DRIFT");
-            carController.StartDrift();
-            isAttemptingDrift = true;
-        }
-
-        if (!isDrift && isAttemptingDrift)
-        {
-            //Debug.Log("STOP DRIFT");
-            carController.StopDrift();
-            isAttemptingDrift = false;
-        }
-    }
-    #endregion
-
-    #region Boost
-    private void HandleBoost()
-    {
-        if (!carController.CanBoost) return;
-
-        // Check if the car is preparing for a turn (near a waypoint)
-        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
-        Vector3 nextDirection = GetNextWaypointDirection();
-        float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
-        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
-
-        // If the angle is too sharp and too close to a waypoint, avoid boosting
-        bool isBoost = angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold;
-
-        if (isBoost)
-        {
-            Debug.Log("BOOST");
-            carController.StartBoost();
-        }
-    }
-    #endregion
-
     #region Handle Input
-    private void HandleAIInputs()
+    private void HandleMoveInput()
     {
         // Check if we've reached the end of the track
         if (currentWaypointIndex >= waypoints.Count)
@@ -176,6 +132,55 @@ public class AIInputController : MonoBehaviour
         if (currentWaypointIndex >= waypoints.Count)
         {
             currentWaypointIndex = loopTrack ? 0 : waypoints.Count - 1;
+        }
+    }
+    #endregion
+
+    #region Drift
+
+    private void HandleDrift()
+    {
+        if (!carController.CanDrift) return;
+
+        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
+        float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
+        bool isDrift = Mathf.Abs(angle) >= driftAngleThreshold;
+
+        // Attempt to start drifting
+        if (isDrift && !isAttemptingDrift)
+        {
+            //Debug.Log("START DRIFT");
+            carController.StartDrift();
+            isAttemptingDrift = true;
+        }
+
+        if (!isDrift && isAttemptingDrift)
+        {
+            //Debug.Log("STOP DRIFT");
+            carController.StopDrift();
+            isAttemptingDrift = false;
+        }
+    }
+    #endregion
+
+    #region Boost
+    private void HandleBoost()
+    {
+        if (!carController.CanBoost) return;
+
+        // Check if the car is preparing for a turn (near a waypoint)
+        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
+        Vector3 nextDirection = GetNextWaypointDirection();
+        float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
+        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
+
+        // If the angle is too sharp and too close to a waypoint, avoid boosting
+        bool isBoost = angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold;
+
+        if (isBoost)
+        {
+            Debug.Log("BOOST");
+            carController.StartBoost();
         }
     }
     #endregion
@@ -257,26 +262,27 @@ public class AIInputController : MonoBehaviour
 
 
     // Debug visualization of current waypoint
+    [Header("Debug Visualization")]
+    public bool isShowGizmos;
     private void OnDrawGizmos()
     {
+        if (!isShowGizmos) return;
+
         if (waypoints == null || waypoints.Count == 0) return;
 
         Gizmos.color = Color.red;
         if (currentWaypointIndex < waypoints.Count)
-        {
             Gizmos.DrawWireSphere(waypoints[currentWaypointIndex].position, waypointThreshold);
-        }
 
         /////////////////////
-        Vector3 direction = transform.forward;
         Gizmos.color = Color.green;
-        Gizmos.DrawLine(transform.position, transform.position + direction * 5f);
+        Gizmos.DrawLine(transform.position, transform.position + transform.forward * 5f);
 
-        Vector3 nextDirection = waypoints[currentWaypointIndex].position - transform.position;
+        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
         Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, transform.position + nextDirection.normalized * 5f);
+        Gizmos.DrawLine(transform.position, transform.position + direction.normalized * 5f);
 
-        float angle = Vector3.SignedAngle(transform.forward, nextDirection, Vector3.up);
+        float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
         GUIStyle style = new GUIStyle();
         style.normal.textColor = Color.black; 
         if (carController)

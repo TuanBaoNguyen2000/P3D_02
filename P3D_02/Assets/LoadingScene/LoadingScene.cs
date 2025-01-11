@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class LoadingSceneManager : MonoBehaviour
+public class LoadingScene : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private Slider progressBar;

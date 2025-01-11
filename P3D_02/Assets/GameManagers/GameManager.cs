@@ -11,8 +11,8 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private int numberOfAICars = 3;
 
     [Header("References")]
-    [SerializeField] private CarController playerCarPrefab;
-    [SerializeField] private AIInputController aiCarPrefab;
+    [SerializeField] private PlayerCar playerCarPrefab;
+    [SerializeField] private AICar aiCarPrefab;
 
     private UIManager uiManager => UIManager.Instance;
 
@@ -39,21 +39,17 @@ public class GameManager : Singleton<GameManager>
         racerDataDict.Clear();
         isRaceActive = false;
 
-        // Spawn player car
-        SpawnPlayerCar(mapData);
+        SpawnPlayerCar();
 
-        // Spawn AI cars
-        SpawnAICars(mapData);
+        SpawnAICars();
 
-        // Start countdown
         StartCountdown();
     }
 
-    // Spawn player car at first spawn point
-    private void SpawnPlayerCar(MapInfo mapData)
+    private void SpawnPlayerCar()
     {
         Vector3 playerSpawnPoint = currentMap.startpoints[0].position;
-        CarController playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, currentMap.startRotation);
+        PlayerCar playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, currentMap.startRotation);
 
         // Initialize player data
         RacerData playerData = new RacerData
@@ -69,14 +65,14 @@ public class GameManager : Singleton<GameManager>
     }
 
     // Spawn AI cars at remaining spawn points
-    private void SpawnAICars(MapInfo mapData)
+    private void SpawnAICars()
     {
         for (int i = 0; i < numberOfAICars; i++)
         {
             if (i + 1 >= currentMap.startpoints.Count) break;
 
             Vector3 aiSpawnPoint = currentMap.startpoints[i + 1].position;
-            AIInputController aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, currentMap.startRotation);
+            AICar aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, currentMap.startRotation);
             aiCar.LoadWaypointData(currentMap.waypoints);
 
             // Initialize AI data
@@ -93,7 +89,6 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    // Start race countdown
     private void StartCountdown()
     {
         currentGameState = GameState.Countdown;
@@ -101,7 +96,6 @@ public class GameManager : Singleton<GameManager>
         uiManager.ShowCountdown();
     }
 
-    // Start the race
     private void StartRace()
     {
         currentGameState = GameState.Racing;
@@ -141,17 +135,14 @@ public class GameManager : Singleton<GameManager>
             }
         }
 
-        // Calculate positions
         CalculateRacePositions();
 
         // Update UI
         //uiManager.UpdateRaceInfo(raceTimer, racerDataDict);
 
-        // Check race end conditions
         CheckRaceEndConditions();
     }
 
-    // Calculate current race positions
     private void CalculateRacePositions()
     {
         // Convert dictionary to list for sorting

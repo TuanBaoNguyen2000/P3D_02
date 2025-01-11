@@ -2311,7 +2311,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3880238991967965829
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2360,7 +2360,6 @@ MonoBehaviour:
   mapOptionPrefab: {fileID: 8939032063004239505, guid: 94992d74988f0344d9ad9a42bda8f7f2, type: 3}
   mapOptionHolder: {fileID: 3710226473399060793}
   roomPanel: {fileID: 6958015467439430555}
-  endPos: {x: 0, y: 0}
 --- !u!1 &8891799253022053504
 GameObject:
   m_ObjectHideFlags: 0

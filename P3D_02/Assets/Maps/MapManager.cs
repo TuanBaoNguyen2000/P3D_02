@@ -31,7 +31,6 @@ public class MapManager : MonoBehaviour
         // Startpoints
         if (startpoints.Count == 0)
         {
-            Debug.Log("dghfghsdf");
             foreach (Transform child in startPositionsParent)
                 startpoints.Add(child);
         }
@@ -46,6 +45,14 @@ public class MapManager : MonoBehaviour
 
     }
 
+    private void OnValidate()
+    {
+        if (!Application.isPlaying && this.gameObject.activeInHierarchy)
+        {
+            Initialize();
+        }
+    }
+
 
     #region Debug Visualization
     private void OnDrawGizmos()
@@ -53,6 +60,7 @@ public class MapManager : MonoBehaviour
         if (!isShowGizmos) return;
 
         DrawWaypoints();
+        DrawStartPoint();
     }
 
     private void DrawWaypoints()

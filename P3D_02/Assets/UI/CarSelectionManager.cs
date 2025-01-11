@@ -26,7 +26,7 @@ public class CarSelectionManager : MonoBehaviour
         if (availableCars != null) return;
         else availableCars = new List<RuntimeCarData>();
 
-        foreach (var car in GameDataManger.CarBaseData) 
+        foreach (var car in GameDataManager.CarBaseData) 
         {
             RuntimeCarData runtimeCarData = new RuntimeCarData(car);
             availableCars.Add(runtimeCarData);

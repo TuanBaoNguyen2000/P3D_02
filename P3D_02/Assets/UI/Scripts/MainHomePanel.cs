@@ -45,6 +45,11 @@ public class MainHomePanel : MonoBehaviour
         singlePlayBtn.onClick.RemoveAllListeners();
     }
 
+    public void ShowPanel(bool isShow)
+    {
+        gameObject.SetActive(isShow);
+    }
+
     private void ChooseSingleMode()
     {
         gameModePanel.gameObject.SetActive(false);
@@ -61,7 +66,7 @@ public class MainHomePanel : MonoBehaviour
 
         if (mapOptions == null || mapOptions.Count == 0)
         {
-            foreach (var mapData in GameDataManger.MapData)
+            foreach (var mapData in GameDataManager.MapInfos)
             {
                 MapOption mapOption = Instantiate(mapOptionPrefab, mapOptionHolder);
                 mapOption.Init(mapData);

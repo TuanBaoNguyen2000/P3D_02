@@ -648,19 +648,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 7341959971160743645}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88e5ce8e31fd8ce4e92bd0bbb8924056, type: 3}
+  m_Script: {fileID: 11500000, guid: 5fc977fb95721ec46b64ac4bee5d741b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: []
-  waypointThreshold: 10
+  waypointThreshold: 5
   loopTrack: 1
   maxSpeedFactor: 1
-  minSpeedFactor: 0.5
+  minSpeedFactor: 0.6
   angleForMaxSpeedReduction: 20
   steeringSensitivityFactor: 10
-  driftAngleThreshold: 20
+  driftAngleThreshold: 30
   boostDistanceThreshold: 10
   boostAngleThreshold: 20
+  isShowGizmos: 0
 --- !u!1 &8209523302169333274
 GameObject:
   m_ObjectHideFlags: 0

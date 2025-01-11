@@ -6,9 +6,12 @@ using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
 {
-    [Header("Countdown Panels")]
-    [SerializeField] private RectTransform countdownPanel;
-    [SerializeField] private Text countdownTxt;
+    [SerializeField] private MainHomePanel mainHomePanel;
+
+    [SerializeField] private CountDownPanel countDownPanel;
+
+    [SerializeField] private HUD hud;
+
 
     private void Start()
     {
@@ -28,20 +31,12 @@ public class UIManager : Singleton<UIManager>
     
     public void ShowCountdown()
     {
-        //TODO
-        countdownPanel.gameObject.SetActive(true);
+        countDownPanel.ShowPanel(true);
     }
 
     public void UpdateCountdown(float time)
     {
-        //TODO
-        if (time < 0.1f) 
-        { 
-            countdownTxt.text = "GO!";
-            if(time <= 0) countdownPanel.gameObject.SetActive(false);
-        }
-        else countdownTxt.text = ((int)time).ToString();
-
+        countDownPanel.UpdateCountdown(time);
     }
 
     public void ShowRaceUI()
@@ -65,6 +60,11 @@ public class UIManager : Singleton<UIManager>
     }
 
     
-
+    private void HideAllPanel()
+    {
+        mainHomePanel.ShowPanel(false);
+        hud.ShowPanel(false);
+        countDownPanel.ShowPanel(false);
+    }
     
 }
