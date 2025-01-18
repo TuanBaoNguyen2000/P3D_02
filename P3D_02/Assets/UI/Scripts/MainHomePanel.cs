@@ -97,7 +97,7 @@ public class MainHomePanel : MonoBehaviour
         {
             float t = elapsedTime / duration;
             uiElement.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
-            Debug.Log(uiElement.anchoredPosition);
+            //Debug.Log(uiElement.anchoredPosition);
             elapsedTime += Time.deltaTime;
             yield return null;
         }

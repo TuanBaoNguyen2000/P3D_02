@@ -1,12 +1,8 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
 
-public class AICar : MonoBehaviour
+public class AICar : MonoBehaviour, IHandleCarInput
 {
     [Header("Waypoint Navigation")]
     public List<Transform> waypoints; 
@@ -35,8 +31,7 @@ public class AICar : MonoBehaviour
     private Vector3 OldWaypoint => waypoints[(currentWaypointIndex - 1 + waypoints.Count) % waypoints.Count].position;
     private Vector3 CurrentWaypoint => waypoints[currentWaypointIndex].position;
 
-
-    internal bool EnableControl { get; set; }
+    public bool EnableControl { get; set; }
 
     private void Start()
     {
@@ -56,7 +51,7 @@ public class AICar : MonoBehaviour
         if (EnableControl) HandleInput();
     }
 
-    private void HandleInput()
+    public void HandleInput()
     {
         HandleMoveInput();
         HandleDrift();

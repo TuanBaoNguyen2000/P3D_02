@@ -13,6 +13,7 @@ public class GameManager : Singleton<GameManager>
     [Header("References")]
     [SerializeField] private PlayerCar playerCarPrefab;
     [SerializeField] private AICar aiCarPrefab;
+    [SerializeField] private CameraFollow cameraFollow;
 
     private UIManager uiManager => UIManager.Instance;
 
@@ -27,13 +28,32 @@ public class GameManager : Singleton<GameManager>
 
     #region Single Player Methods
 
+    private void Update()
+    {
+        switch (currentGameState)
+        {
+            case GameState.Countdown:
+                countdownTimer -= Time.deltaTime;
+                uiManager.UpdateCountdown(countdownTimer);
+                if (countdownTimer <= 0)
+                {
+                    StartRace();
+                }
+                break;
+
+            case GameState.Racing:
+                UpdateRace();
+                break;
+        }
+    }
+
     public void LoadMapData(MapManager map)
     {
         this.currentMap = map;
     }
 
     // Initialize single player race
-    public void StartSinglePlayerRace(MapInfo mapData)
+    public void StartSinglePlayerRace()
     {
         currentGameState = GameState.Loading;
         racerDataDict.Clear();
@@ -50,21 +70,24 @@ public class GameManager : Singleton<GameManager>
     {
         Vector3 playerSpawnPoint = currentMap.startpoints[0].position;
         PlayerCar playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, currentMap.startRotation);
+        playerCar.EnableControl = false;
 
         // Initialize player data
         RacerData playerData = new RacerData
         {
             racerName = "Player",
-            //racerObject = playerCar,
+            racerHandleInput = playerCar,
             currentLap = 0,
             isFinished = false,
             isAI = false,
             checkpointIndex = 0
         };
+
+        CameraFollow camera = Instantiate(cameraFollow, Vector3.zero, Quaternion.identity);
+        camera.carTarget = playerCar.transform;
         racerDataDict.Add(0, playerData); // Player always has ID 0
     }
 
-    // Spawn AI cars at remaining spawn points
     private void SpawnAICars()
     {
         for (int i = 0; i < numberOfAICars; i++)
@@ -74,17 +97,19 @@ public class GameManager : Singleton<GameManager>
             Vector3 aiSpawnPoint = currentMap.startpoints[i + 1].position;
             AICar aiCar = Instantiate(aiCarPrefab, aiSpawnPoint, currentMap.startRotation);
             aiCar.LoadWaypointData(currentMap.waypoints);
+            aiCar.EnableControl = false;
 
             // Initialize AI data
             RacerData aiData = new RacerData
             {
                 racerName = $"AI {i + 1}",
-                //racerObject = aiCar,
+                racerHandleInput = aiCar,
                 currentLap = 0,
                 isFinished = false,
                 isAI = true,
                 checkpointIndex = 0
             };
+
             racerDataDict.Add(i + 1, aiData);
         }
     }
@@ -106,16 +131,7 @@ public class GameManager : Singleton<GameManager>
         // Enable car controls for all racers
         foreach (var racer in racerDataDict.Values)
         {
-            if (!racer.isAI)
-            {
-                // Enable player controls
-                //racer.racerObject.GetComponent<PlayerController>().EnableControls();
-            }
-            else
-            {
-                // Enable AI controls
-                //racer.racerObject.GetComponent<AIController>().StartRacing();
-            }
+            racer.racerHandleInput.EnableControl = true;
         }
     }
 
@@ -251,21 +267,12 @@ public class GameManager : Singleton<GameManager>
         // Disable all car controls
         foreach (var racer in racerDataDict.Values)
         {
-            if (!racer.isAI)
-            {
-                //racer.racerObject.GetComponent<PlayerController>().DisableControls();
-            }
-            else
-            {
-                //racer.racerObject.GetComponent<AIController>().StopRacing();
-            }
+            racer.racerHandleInput.EnableControl = false;
         }
 
-        // Show results
         uiManager.ShowRaceResults();
     }
 
-    // Pause handling
     public void PauseGame()
     {
         if (currentGameState == GameState.Racing)
@@ -286,24 +293,7 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    private void Update()
-    {
-        switch (currentGameState)
-        {
-            case GameState.Countdown:
-                countdownTimer -= Time.deltaTime;
-                uiManager.UpdateCountdown(countdownTimer);
-                if (countdownTimer <= 0)
-                {
-                    StartRace();
-                }
-                break;
-
-            case GameState.Racing:
-                UpdateRace();
-                break;
-        }
-    }
+    
 
     #endregion
 
@@ -367,7 +357,7 @@ public class GameManager : Singleton<GameManager>
 public class RacerData
 {
     public string racerName;
-    //public GameObject racerObject;
+    public IHandleCarInput racerHandleInput;
     public int currentLap;
     public float currentLapTime;
     public float bestLapTime;

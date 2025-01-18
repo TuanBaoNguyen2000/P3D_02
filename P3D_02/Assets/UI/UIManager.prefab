@@ -725,7 +725,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isDestroyOnLoad: 0
   mainHomePanel: {fileID: 4377290350625751058}
-  countDownPanel: {fileID: 0}
+  countDownPanel: {fileID: 5179863054123341653}
   hud: {fileID: 6200480308442382071}
 --- !u!1 &4110799362282365992
 GameObject:
@@ -2414,3 +2414,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4871426171893855892, guid: 2179faf6c14cbda44a5e5d19d455563c, type: 3}
   m_PrefabInstance: {fileID: 8263833885257516197}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5179863054123341653 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3840896629220398064, guid: 2179faf6c14cbda44a5e5d19d455563c, type: 3}
+  m_PrefabInstance: {fileID: 8263833885257516197}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11127aae05410f144bd8c0db764f0c63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

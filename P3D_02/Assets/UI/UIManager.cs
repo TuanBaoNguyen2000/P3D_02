@@ -15,7 +15,7 @@ public class UIManager : Singleton<UIManager>
 
     private void Start()
     {
-
+        ShowMainHomeUI();
     }
 
     private void ResiterEvents()
@@ -28,9 +28,16 @@ public class UIManager : Singleton<UIManager>
 
     }
 
+    public void ShowMainHomeUI()
+    {
+        HideAllPanel();
+        mainHomePanel.ShowPanel(true);
+    }
+
     
     public void ShowCountdown()
     {
+        HideAllPanel();
         countDownPanel.ShowPanel(true);
     }
 
@@ -41,7 +48,8 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowRaceUI()
     {
-        //TODO
+        HideAllPanel();
+        hud.ShowPanel(true);
     }
 
     public void ShowRaceResults()

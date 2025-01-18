@@ -44,6 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a95bc9e6f19f534a90b74b7f35bfa47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isDestroyOnLoad: 1
+  isDestroyOnLoad: 0
   carDataSO: {fileID: 11400000, guid: 027cd0d5df02158458ab54c55c359802, type: 2}
   mapInfoSO: {fileID: 11400000, guid: 8d84958955f1e1c448d52c77aa421353, type: 2}

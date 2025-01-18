@@ -51,3 +51,4 @@ MonoBehaviour:
   numberOfAICars: 1
   playerCarPrefab: {fileID: 1012699429221248496, guid: c63e1ca30d0db234f92175b11de54de9, type: 3}
   aiCarPrefab: {fileID: 1590006523661017787, guid: 3c0b4afaf823cfd4fbe3f958ab9b7be4, type: 3}
+  cameraFollow: {fileID: 5176046065242870048, guid: f96d13c7901bd6d46a1e12ed1d5bb001, type: 3}

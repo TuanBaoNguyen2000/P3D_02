@@ -27,11 +27,13 @@ public class LoadingScene : MonoBehaviour
     private IEnumerator LoadSceneAsync()
     {
         string sceneName = SceneLoader.TargetScene;
-        if (string.IsNullOrEmpty(sceneName)) sceneName = "MainHomeScene";
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            sceneName = "MainHomeScene";
+        }
 
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
         operation.allowSceneActivation = false;
-
         while (!operation.isDone)
         {
             float progress = Mathf.Clamp01(operation.progress / 0.9f);
