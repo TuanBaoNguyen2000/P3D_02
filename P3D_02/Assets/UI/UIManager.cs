@@ -50,11 +50,17 @@ public class UIManager : Singleton<UIManager>
     {
         HideAllPanel();
         hud.ShowPanel(true);
+        hud.InitRacerPositonBoard(GameManager.Instance.TotalRacer);
     }
 
     public void ShowRaceResults()
     {
         //TODO
+    }
+
+    public void UpdateRacerPosition(Dictionary<int, RacerData> racerDataDict)
+    {
+        hud.UpdateRacerPosition(racerDataDict);
     }
 
     public void ShowPauseMenu()

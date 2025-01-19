@@ -2094,9 +2094,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 310503837148425655}
     m_Modifications:
+    - target: {fileID: 4283343273689511408, guid: f442d27df9ab94847a39efec07d26939, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4283343273689511408, guid: f442d27df9ab94847a39efec07d26939, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5949446463150366522, guid: f442d27df9ab94847a39efec07d26939, type: 3}
       propertyPath: m_Name
       value: HUD
+      objectReference: {fileID: 0}
+    - target: {fileID: 6287695748294834705, guid: f442d27df9ab94847a39efec07d26939, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6433846810354652757, guid: f442d27df9ab94847a39efec07d26939, type: 3}
       propertyPath: m_Pivot.x

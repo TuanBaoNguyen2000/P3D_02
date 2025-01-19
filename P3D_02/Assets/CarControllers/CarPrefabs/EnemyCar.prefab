@@ -652,7 +652,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: []
-  waypointThreshold: 5
+  waypointThreshold: 10
   loopTrack: 1
   maxSpeedFactor: 1
   minSpeedFactor: 0.6
@@ -661,7 +661,7 @@ MonoBehaviour:
   driftAngleThreshold: 30
   boostDistanceThreshold: 10
   boostAngleThreshold: 20
-  isShowGizmos: 0
+  isShowGizmos: 1
 --- !u!1 &8209523302169333274
 GameObject:
   m_ObjectHideFlags: 0

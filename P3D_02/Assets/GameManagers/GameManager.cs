@@ -20,6 +20,8 @@ public class GameManager : Singleton<GameManager>
     private GameState currentGameState;
     private MapManager currentMap;
 
+    internal int TotalRacer {  get; private set; }
+
     // Race data
     private float raceTimer;
     private float countdownTimer;
@@ -58,6 +60,7 @@ public class GameManager : Singleton<GameManager>
         currentGameState = GameState.Loading;
         racerDataDict.Clear();
         isRaceActive = false;
+        TotalRacer = numberOfAICars + 1;
 
         SpawnPlayerCar();
 
@@ -155,6 +158,7 @@ public class GameManager : Singleton<GameManager>
 
         // Update UI
         //uiManager.UpdateRaceInfo(raceTimer, racerDataDict);
+        uiManager.UpdateRacerPosition(racerDataDict);
 
         CheckRaceEndConditions();
     }
@@ -184,6 +188,7 @@ public class GameManager : Singleton<GameManager>
         {
             racerList[i].Value.position = i + 1;
         }
+
     }
 
     // Handle checkpoint crossing
@@ -292,9 +297,7 @@ public class GameManager : Singleton<GameManager>
             uiManager.HidePauseMenu();
         }
     }
-
     
-
     #endregion
 
     #region Multiplayer Methods (To Be Implemented)
@@ -358,13 +361,17 @@ public class RacerData
 {
     public string racerName;
     public IHandleCarInput racerHandleInput;
-    public int currentLap;
+    public bool isAI;
+
     public float currentLapTime;
     public float bestLapTime;
+
     public int position;
     public bool isFinished;
-    public bool isAI;
+
+    public int currentLap;
     public int checkpointIndex;
+    public float distanceFromNextCheckpoint;
 }
 
 public enum GameState

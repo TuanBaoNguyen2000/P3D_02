@@ -63,6 +63,7 @@ public class AICar : MonoBehaviour, IHandleCarInput
     {
         this.waypoints = waypoints;
     }
+
     #region Handle Input
     private void HandleMoveInput()
     {
@@ -226,13 +227,9 @@ public class AICar : MonoBehaviour, IHandleCarInput
 
     void ResetCar()
     {
-        Vector3 carPosition = transform.position;
-
-        Vector3 projectedPosition = ProjectionOnSegment(OldWaypoint, CurrentWaypoint , carPosition);
-
         Vector3 direction = (CurrentWaypoint - OldWaypoint).normalized;
 
-        carController.ResetCar(projectedPosition, direction);
+        carController.ResetCar(OldWaypoint, direction);
     }
 
     Vector3 ProjectionOnSegment(Vector3 segmentStart, Vector3 segmentEnd, Vector3 point)
@@ -267,13 +264,13 @@ public class AICar : MonoBehaviour, IHandleCarInput
 
         Gizmos.color = Color.red;
         if (currentWaypointIndex < waypoints.Count)
-            Gizmos.DrawWireSphere(waypoints[currentWaypointIndex].position, waypointThreshold);
+            Gizmos.DrawWireSphere(CurrentWaypoint, waypointThreshold);
 
         /////////////////////
         Gizmos.color = Color.green;
         Gizmos.DrawLine(transform.position, transform.position + transform.forward * 5f);
 
-        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
+        Vector3 direction = CurrentWaypoint - transform.position;
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + direction.normalized * 5f);
 

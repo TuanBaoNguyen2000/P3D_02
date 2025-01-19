@@ -45,6 +45,11 @@ public class PlayerCar : MonoBehaviour, IHandleCarInput
             carController.StartBoost();
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            //carController.ResetCar();
+        }
+
         boost = carController.CurrentBoostEnergy;
     }
 }

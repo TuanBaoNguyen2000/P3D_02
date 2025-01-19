@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 
 public class HUD : MonoBehaviour, IGameEventObserver
 {
     [SerializeField] private Slider boostEnergyBar;
+    [SerializeField] private GameObject RacerPositions;
+    [SerializeField] private Text racerRankTxt;
 
+    private List<Text> racerRanks = new List<Text>();
 
     private void OnEnable()
     {
@@ -34,5 +38,22 @@ public class HUD : MonoBehaviour, IGameEventObserver
     private void UpdateBoostEnergyBar(float value)
     {
         boostEnergyBar.value = value;
+    }
+
+    internal void InitRacerPositonBoard(int amount)
+    {
+        for (int i = 0; i < amount; i++) 
+        {
+            Text rankTxt = Instantiate(racerRankTxt, this.RacerPositions.transform);
+            racerRanks.Add(rankTxt);
+        }
+    }
+
+    internal void UpdateRacerPosition(Dictionary<int, RacerData> racerDataDict)
+    {
+        foreach(var racer in racerDataDict)
+        {
+            racerRanks[racer.Value.position - 1].text = $"{racer.Value.position}: {racer.Value.racerName}"; 
+        }
     }
 }
