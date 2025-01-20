@@ -13,7 +13,7 @@ public interface IRaceUpdater
 
     void NotifyCheckpointCrossed(int racerId, int checkpointIndex);
 
-    RacerProgress GetRacerProgress(int racerId);
+    RacerInfo GetRacerProgress(int racerId);
 }
 
 

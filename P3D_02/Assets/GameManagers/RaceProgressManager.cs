@@ -4,7 +4,7 @@ using System.Linq;
 
 public class RaceProgressManager : MonoBehaviour, IRaceUpdater
 {
-    private Dictionary<int, IRacerInformation> racers = new Dictionary<int, IRacerInformation>();
+    private Dictionary<int, IRacerInformation> racerInformations = new Dictionary<int, IRacerInformation>();
     private int nextRacerId = 0;
 
     [Header("Race Settings")]
@@ -17,97 +17,49 @@ public class RaceProgressManager : MonoBehaviour, IRaceUpdater
     private void Update()
     {
         // Update progress for all racers
-        foreach (var racer in racers.Values)
+        foreach (var racerInfo in racerInformations.Values)
         {
-            racer.UpdateRacerProgress();
+            racerInfo.UpdateRacerProgress();
             UpdatePositions();
         }
     }
 
     public void RegisterRacer(IRacerInformation racer)
     {
-        racers.Add(racer.RacerInfo.id, racer);
+        racerInformations.Add(racer.Information.id, racer);
     }
 
     public void UnregisterRacer(int racerId)
     {
-        if (racers.ContainsKey(racerId))
+        if (racerInformations.ContainsKey(racerId))
         {
-            racers.Remove(racerId);
+            racerInformations.Remove(racerId);
             UpdatePositions();
         }
     }
 
     public void UpdateCarStats(RacerInfo info)
     {
-        if (!racers.TryGetValue(info.id, out IRacerInformation racerInfo))
+        if (!racerInformations.TryGetValue(info.id, out IRacerInformation racerInfo))
             return;
 
-        // Update lap times
-        float currentTime = Time.time;
-        info.progress.currentLapTime = currentTime - info.progress.lastUpdateTime;
-
-        // Calculate distance to next checkpoint
-        Vector3 racerPosition = (racerInfo as MonoBehaviour).transform.position;
-        int nextCheckpointIndex = (info.progress.checkpointIndex + 1) % checkpoints.Count;
-        info.progress.distanceToNextCheckpoint = Vector3.Distance(
-            racerPosition,
-            checkpoints[nextCheckpointIndex].position
-        );
-
-        // Calculate lap progress
-        float totalCheckpoints = checkpoints.Count;
-        info.progress.lapProgress = (info.progress.checkpointIndex +
-            (1 - (info.progress.distanceToNextCheckpoint / GetCheckpointDistance(info.progress.checkpointIndex)))) / totalCheckpoints;
-
-        // Calculate race progress
-        info.progress.raceProgress = (info.progress.currentLap + info.progress.lapProgress) / totalLaps;
-
-        // Update racer's progress
-        racerInfo.RacerInfo = info;
+        
     }
 
     public void NotifyCheckpointCrossed(int racerId, int checkpointIndex)
     {
-        if (!racers.TryGetValue(racerId, out IRacerInformation racerInfo))
+        if (!racerInformations.TryGetValue(racerId, out IRacerInformation racerInfo))
             return;
 
-        var progress = racerInfo.RacerInfo.progress;
-
-        // Verify checkpoint order
-        if (checkpointIndex != (progress.checkpointIndex + 1) % checkpoints.Count)
-            return;
-
-        progress.checkpointIndex = checkpointIndex;
-
-        // Check if lap completed
-        if (checkpointIndex == 0)
-        {
-            CompleteLap(progress);
-        }
-
-        UpdateCarStats(racerInfo.RacerInfo);
     }
 
-    public RacerProgress GetRacerProgress(int racerId)
+    public RacerInfo GetRacerProgress(int racerId)
     {
-        return racers.TryGetValue(racerId, out IRacerInformation racerInfo) ? racerInfo.RacerInfo.progress : null;
+        return racerInformations.TryGetValue(racerId, out IRacerInformation racerInfo) ? racerInfo.Information : null;
     }
 
-    private void CompleteLap(RacerProgress progress)
+    private void CompleteLap(RacerInfo progress)
     {
-        // Store lap time
-        progress.lapTimes.Add(progress.currentLapTime);
-
-        // Update best lap time
-        if (progress.bestLapTime == 0 || progress.currentLapTime < progress.bestLapTime)
-        {
-            progress.bestLapTime = progress.currentLapTime;
-        }
-
-        // Reset lap time and increment lap counter
-        progress.lastUpdateTime = Time.time;
-        progress.currentLapTime = 0;
         progress.currentLap++;
     }
 
@@ -123,14 +75,14 @@ public class RaceProgressManager : MonoBehaviour, IRaceUpdater
     private void UpdatePositions()
     {
         // Sort racers by race progress
-        var sortedRacers = racers.Values
-            .OrderByDescending(r => r.RacerInfo.progress.raceProgress)
+        var sortedRacers = racerInformations.Values
+            .OrderByDescending(r => r.Information.raceProgress)
             .ToList();
 
         // Update positions
         for (int i = 0; i < sortedRacers.Count; i++)
         {
-            sortedRacers[i].RacerInfo.progress.currentPosition = i + 1;
+            sortedRacers[i].Information.currentPosition = i + 1;
         }
     }
 

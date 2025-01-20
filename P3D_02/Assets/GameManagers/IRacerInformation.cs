@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IRacerInformation
 {
-    public RacerInfo RacerInfo { get; set; }
+    public RacerInfo Information { get; set; }
     public void InitRacerInfo(int id, string name);
     public void UpdateRacerProgress();
 }
@@ -14,21 +14,25 @@ public class RacerInfo
 {
     public int id;
     public string racerName;
-    public RacerProgress progress;
-}
 
-[System.Serializable]
-public class RacerProgress
-{
     public int currentLap;
-    public int checkpointIndex;
+    public int currentCheckpoint;
     public float distanceToNextCheckpoint;
-    public float lapProgress;
+
     public float raceProgress;
     public int currentPosition;
-    public float lastUpdateTime;
 
-    public float currentLapTime;
-    public float bestLapTime;
-    public List<float> lapTimes = new List<float>();
+    public RacerInfo(int id, string name)
+    {
+        this.id = id;
+        this.racerName = name;
+
+        this.currentLap = 0;
+        this.currentCheckpoint = 0;
+        this.distanceToNextCheckpoint = 0;
+
+        this.raceProgress = 0;
+        this.currentPosition = 0;
+    }
 }
+

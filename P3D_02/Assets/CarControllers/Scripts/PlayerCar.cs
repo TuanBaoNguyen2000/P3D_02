@@ -11,7 +11,7 @@ public class PlayerCar : MonoBehaviour, IHandleCarInput, IRacerInformation
 
     public bool EnableControl { get; set; }
 
-    public RacerInfo RacerInfo { get ; set; }
+    public RacerInfo Information { get ; set; }
 
     void Awake()
     {
@@ -61,8 +61,6 @@ public class PlayerCar : MonoBehaviour, IHandleCarInput, IRacerInformation
 
     public void InitRacerInfo(int id, string name)
     {
-        this.RacerInfo.id = id;
-        this.RacerInfo.racerName = name;
-        this.RacerInfo.progress = new RacerProgress();
+        this.Information = new RacerInfo(id, name);
     }
 }
