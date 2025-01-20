@@ -3,13 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
-public class PlayerCar : MonoBehaviour, IHandleCarInput
+public class PlayerCar : MonoBehaviour, IHandleCarInput, IRacerInformation
 {
     private CarController carController;
 
     public float boost;
 
-    public bool EnableControl { get; set; }  
+    public bool EnableControl { get; set; }
+
+    public RacerInfo RacerInfo { get ; set; }
 
     void Awake()
     {
@@ -51,5 +53,16 @@ public class PlayerCar : MonoBehaviour, IHandleCarInput
         }
 
         boost = carController.CurrentBoostEnergy;
+    }
+
+    public void UpdateRacerProgress()
+    {
+    }
+
+    public void InitRacerInfo(int id, string name)
+    {
+        this.RacerInfo.id = id;
+        this.RacerInfo.racerName = name;
+        this.RacerInfo.progress = new RacerProgress();
     }
 }

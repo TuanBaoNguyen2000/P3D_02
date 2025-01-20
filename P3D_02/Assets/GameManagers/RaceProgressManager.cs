@@ -1,160 +1,161 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using System.Linq;
 
-public class RaceProgressManager : MonoBehaviour
+public class RaceProgressManager : MonoBehaviour, IRaceUpdater
 {
-    //private CheckpointManager checkpointManager;
-    private Dictionary<int, RacerProgress> racerProgresses = new Dictionary<int, RacerProgress>();
+    private Dictionary<int, IRacerInformation> racers = new Dictionary<int, IRacerInformation>();
+    private int nextRacerId = 0;
 
-    private float totalLaps = 5;
+    [Header("Race Settings")]
+    public int totalLaps = 3;
+    public List<Transform> checkpoints;
 
-    [System.Serializable]
-    public class RacerProgress
+    [Header("Debug")]
+    public bool showDebugInfo = false;
+
+    private void Update()
     {
-        public int racerId;
-        public int currentLap;
-        public int checkpointIndex;
-        public float distanceToNextCheckpoint;
-        public float lapProgress;      // 0-1 trong m?t vòng ?ua
-        public float raceProgress;     // 0-1 trong toàn b? cu?c ?ua
-        public int currentPosition;
-        public float lastUpdateTime;
-
-        // Th?i gian
-        public float currentLapTime;
-        public float bestLapTime;
-        public List<float> lapTimes = new List<float>();
+        // Update progress for all racers
+        foreach (var racer in racers.Values)
+        {
+            racer.UpdateRacerProgress();
+            UpdatePositions();
+        }
     }
 
-    //public void Initialize(CheckpointManager checkpointManager)
-    //{
-    //    this.checkpointManager = checkpointManager;
-    //}
-
-    public void RegisterRacer(int racerId)
+    public void RegisterRacer(IRacerInformation racer)
     {
-        racerProgresses[racerId] = new RacerProgress
-        {
-            racerId = racerId,
-            currentLap = 0,
-            checkpointIndex = 0
-        };
+        racers.Add(racer.RacerInfo.id, racer);
     }
 
     public void UnregisterRacer(int racerId)
     {
-        if (racerProgresses.ContainsKey(racerId))
+        if (racers.ContainsKey(racerId))
         {
-            racerProgresses.Remove(racerId);
+            racers.Remove(racerId);
+            UpdatePositions();
         }
     }
 
-    public void UpdateRacerPosition(int racerId, Vector3 position)
+    public void UpdateCarStats(RacerInfo info)
     {
-        if (!racerProgresses.TryGetValue(racerId, out var progress)) return;
+        if (!racers.TryGetValue(info.id, out IRacerInformation racerInfo))
+            return;
 
-        progress.lastUpdateTime = Time.time;
-        //progress.distanceToNextCheckpoint = checkpointManager.GetDistanceToNextCheckpoint(
-        //    position,
-        //    progress.checkpointIndex
-        //);
+        // Update lap times
+        float currentTime = Time.time;
+        info.progress.currentLapTime = currentTime - info.progress.lastUpdateTime;
 
-        //progress.lapProgress = checkpointManager.GetLapProgress(
-        //    position,
-        //    progress.checkpointIndex
-        //);
+        // Calculate distance to next checkpoint
+        Vector3 racerPosition = (racerInfo as MonoBehaviour).transform.position;
+        int nextCheckpointIndex = (info.progress.checkpointIndex + 1) % checkpoints.Count;
+        info.progress.distanceToNextCheckpoint = Vector3.Distance(
+            racerPosition,
+            checkpoints[nextCheckpointIndex].position
+        );
 
-        progress.raceProgress = CalculateRaceProgress(progress);
+        // Calculate lap progress
+        float totalCheckpoints = checkpoints.Count;
+        info.progress.lapProgress = (info.progress.checkpointIndex +
+            (1 - (info.progress.distanceToNextCheckpoint / GetCheckpointDistance(info.progress.checkpointIndex)))) / totalCheckpoints;
 
-        // C?p nh?t th?i gian
-        progress.currentLapTime += Time.deltaTime;
+        // Calculate race progress
+        info.progress.raceProgress = (info.progress.currentLap + info.progress.lapProgress) / totalLaps;
 
-        // Tính l?i th? t? sau khi c?p nh?t progress
-        CalculatePositions();
+        // Update racer's progress
+        racerInfo.RacerInfo = info;
     }
 
-    public void OnCheckpointCrossed(int racerId, int checkpointIndex, int totalLaps)
+    public void NotifyCheckpointCrossed(int racerId, int checkpointIndex)
     {
-        if (!racerProgresses.TryGetValue(racerId, out var progress)) return;
+        if (!racers.TryGetValue(racerId, out IRacerInformation racerInfo))
+            return;
 
-        // C?p nh?t checkpoint
+        var progress = racerInfo.RacerInfo.progress;
+
+        // Verify checkpoint order
+        if (checkpointIndex != (progress.checkpointIndex + 1) % checkpoints.Count)
+            return;
+
         progress.checkpointIndex = checkpointIndex;
 
-        // Ki?m tra hoàn thành vòng ?ua
-        if (checkpointIndex == 0 && progress.currentLap < totalLaps)
+        // Check if lap completed
+        if (checkpointIndex == 0)
         {
             CompleteLap(progress);
         }
+
+        UpdateCarStats(racerInfo.RacerInfo);
+    }
+
+    public RacerProgress GetRacerProgress(int racerId)
+    {
+        return racers.TryGetValue(racerId, out IRacerInformation racerInfo) ? racerInfo.RacerInfo.progress : null;
     }
 
     private void CompleteLap(RacerProgress progress)
     {
-        // L?u th?i gian vòng ?ua
+        // Store lap time
         progress.lapTimes.Add(progress.currentLapTime);
 
-        // C?p nh?t best lap
+        // Update best lap time
         if (progress.bestLapTime == 0 || progress.currentLapTime < progress.bestLapTime)
         {
             progress.bestLapTime = progress.currentLapTime;
         }
 
-        progress.currentLap++;
+        // Reset lap time and increment lap counter
+        progress.lastUpdateTime = Time.time;
         progress.currentLapTime = 0;
+        progress.currentLap++;
     }
 
-    private float CalculateRaceProgress(RacerProgress progress)
+    private float GetCheckpointDistance(int checkpointIndex)
     {
-        return (progress.currentLap + progress.lapProgress) / totalLaps;
+        int nextIndex = (checkpointIndex + 1) % checkpoints.Count;
+        return Vector3.Distance(
+            checkpoints[checkpointIndex].position,
+            checkpoints[nextIndex].position
+        );
     }
 
-    private void CalculatePositions()
+    private void UpdatePositions()
     {
-        // Chuy?n sang list ?? s?p x?p
-        var racerList = racerProgresses.Values.ToList();
+        // Sort racers by race progress
+        var sortedRacers = racers.Values
+            .OrderByDescending(r => r.RacerInfo.progress.raceProgress)
+            .ToList();
 
-        // S?p x?p theo th? t? ?u tiên: S? vòng > Checkpoint > Kho?ng cách t?i checkpoint ti?p
-        racerList.Sort((a, b) =>
+        // Update positions
+        for (int i = 0; i < sortedRacers.Count; i++)
         {
-            // So sánh s? vòng
-            if (a.currentLap != b.currentLap)
-                return b.currentLap.CompareTo(a.currentLap);
-
-            // So sánh checkpoint n?u cùng vòng
-            if (a.checkpointIndex != b.checkpointIndex)
-                return b.checkpointIndex.CompareTo(a.checkpointIndex);
-
-            // So sánh kho?ng cách t?i checkpoint ti?p theo
-            return a.distanceToNextCheckpoint.CompareTo(b.distanceToNextCheckpoint);
-        });
-
-        // Gán position
-        for (int i = 0; i < racerList.Count; i++)
-        {
-            racerList[i].currentPosition = i + 1;
+            sortedRacers[i].RacerInfo.progress.currentPosition = i + 1;
         }
     }
 
-    // Helper methods ?? l?y thông tin
-    public int GetRacerPosition(int racerId)
+    private void OnDrawGizmos()
     {
-        return racerProgresses.TryGetValue(racerId, out var progress)
-            ? progress.currentPosition
-            : -1;
-    }
+        if (!showDebugInfo || checkpoints == null)
+            return;
 
-    public float GetRacerProgress(int racerId)
-    {
-        return racerProgresses.TryGetValue(racerId, out var progress)
-            ? progress.raceProgress
-            : 0f;
-    }
+        // Draw checkpoints
+        for (int i = 0; i < checkpoints.Count; i++)
+        {
+            if (checkpoints[i] == null) continue;
 
-    public RacerProgress GetRacerData(int racerId)
-    {
-        return racerProgresses.TryGetValue(racerId, out var progress)
-            ? progress
-            : null;
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(checkpoints[i].position, 2f);
+
+            // Draw lines between checkpoints
+            if (i < checkpoints.Count - 1 && checkpoints[i + 1] != null)
+            {
+                Gizmos.DrawLine(checkpoints[i].position, checkpoints[i + 1].position);
+            }
+            else if (i == checkpoints.Count - 1 && checkpoints[0] != null)
+            {
+                Gizmos.DrawLine(checkpoints[i].position, checkpoints[0].position);
+            }
+        }
     }
 }

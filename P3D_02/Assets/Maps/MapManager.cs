@@ -23,8 +23,8 @@ public class MapManager : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.LoadMapData(this);
-        GameManager.Instance.StartSinglePlayerRace();
+        //GameManager.Instance.LoadMapData(this);
+        //GameManager.Instance.StartSinglePlayerRace();
     }
 
     public void Initialize()
