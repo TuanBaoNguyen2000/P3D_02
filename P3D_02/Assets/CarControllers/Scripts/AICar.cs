@@ -2,12 +2,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class AICar : MonoBehaviour, IHandleCarInput
+public class AICar : MonoBehaviour, IHandleCarInput, IRacerInformation
 {
     [Header("Waypoint Navigation")]
-    public List<Transform> waypoints; 
-    public float waypointThreshold = 5f; // Distance to switch to next waypoint
-    public bool loopTrack = true; // Whether to loop the track or stop at the end
+    public List<CheckPointTrigger> waypoints; 
 
     [Header("AI Behavior Settings")]
     public float maxSpeedFactor = 1f; // Speed factor for straight sections
@@ -19,19 +17,19 @@ public class AICar : MonoBehaviour, IHandleCarInput
     public float driftAngleThreshold = 30f; // Angle at which AI starts to drift
 
     [Header("Boost Settings")]
-    public float boostDistanceThreshold = 10f; // Distance to next waypoint at which AI can't boost
-    public float boostAngleThreshold = 20f; // Angle at which AI can't boost
+    public float boostDistanceThreshold = 20f; // Distance to next waypoint at which AI can't boost
+    public float boostAngleThreshold = 10f; // Angle at which AI can't boost
 
     private CarController carController;
-    private int currentWaypointIndex = 0;
-
     // Drift and boost tracking
     private bool isAttemptingDrift;
 
-    private Vector3 OldWaypoint => waypoints[(currentWaypointIndex - 1 + waypoints.Count) % waypoints.Count].position;
-    private Vector3 CurrentWaypoint => waypoints[currentWaypointIndex].position;
+    private Vector3 OldWaypoint => waypoints[(Information.currentCheckpoint)].Position;
+    private Vector3 CurrentTargetedWaypoint => waypoints[(Information.currentCheckpoint + 1) % waypoints.Count].Position;
+    private Vector3 NextTargetedWaypoint => waypoints[(Information.currentCheckpoint + 2) % waypoints.Count].Position;
 
     public bool EnableControl { get; set; }
+    public RacerInfo Information { get; set; }
 
     private void Start()
     {
@@ -59,31 +57,25 @@ public class AICar : MonoBehaviour, IHandleCarInput
         CheckResetCar();
     }
 
-    public void LoadWaypointData(List<Transform> waypoints)
+    public void LoadWaypointData(List<CheckPointTrigger> waypoints)
     {
         this.waypoints = waypoints;
+    }
+
+    public void InitRacerInfo(int id, string name)
+    {
+        this.Information = new RacerInfo(id, name);
+    }
+
+    public void UpdateRacerProgress()
+    {
     }
 
     #region Handle Input
     private void HandleMoveInput()
     {
-        // Check if we've reached the end of the track
-        if (currentWaypointIndex >= waypoints.Count)
-        {
-            if (loopTrack)
-            {
-                currentWaypointIndex = 0; // Reset to start of track
-            }
-            else
-            {
-                // Stop the car if not looping
-                carController.MoveInput = 0f;
-                return;
-            }
-        }
-
         // Determine direction to next waypoint
-        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
+        Vector3 direction = (CurrentTargetedWaypoint - transform.position).normalized;
 
         float steerAmount = CalculateSteeringInput(direction);
         float moveAmount = CalculateMoveInput(direction);
@@ -91,12 +83,6 @@ public class AICar : MonoBehaviour, IHandleCarInput
         // Apply inputs to car controller
         carController.SteerInput = steerAmount;
         carController.MoveInput = moveAmount;
-
-        // Check if we're close to the current waypoint
-        if (Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position) < waypointThreshold)
-        {
-            AdvanceToNextWaypoint();
-        }
     }
 
     private float CalculateSteeringInput(Vector3 direction)
@@ -114,22 +100,6 @@ public class AICar : MonoBehaviour, IHandleCarInput
 
         return Mathf.Clamp(angleFactor , 0.3f, 1f);
     }
-
-    private Vector3 GetNextWaypointDirection()
-    {
-        int nextIndex = (currentWaypointIndex + 1) % waypoints.Count;
-        return (waypoints[nextIndex].position - waypoints[currentWaypointIndex].position).normalized;
-    }
-
-    private void AdvanceToNextWaypoint()
-    {
-        currentWaypointIndex++;
-
-        if (currentWaypointIndex >= waypoints.Count)
-        {
-            currentWaypointIndex = loopTrack ? 0 : waypoints.Count - 1;
-        }
-    }
     #endregion
 
     #region Drift
@@ -138,7 +108,7 @@ public class AICar : MonoBehaviour, IHandleCarInput
     {
         if (!carController.CanDrift) return;
 
-        Vector3 direction = waypoints[currentWaypointIndex].position - transform.position;
+        Vector3 direction = CurrentTargetedWaypoint - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, direction, Vector3.up);
         bool isDrift = Mathf.Abs(angle) >= driftAngleThreshold;
 
@@ -165,10 +135,10 @@ public class AICar : MonoBehaviour, IHandleCarInput
         if (!carController.CanBoost) return;
 
         // Check if the car is preparing for a turn (near a waypoint)
-        Vector3 direction = (waypoints[currentWaypointIndex].position - transform.position).normalized;
-        Vector3 nextDirection = GetNextWaypointDirection();
-        float angleToNextWaypoint = Vector3.Angle(transform.forward, direction);
-        float distanceToWaypoint = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
+        Vector3 direction = (CurrentTargetedWaypoint - OldWaypoint).normalized;
+        Vector3 nextDirection = (NextTargetedWaypoint - CurrentTargetedWaypoint).normalized;
+        float angleToNextWaypoint = Vector3.Angle(direction, nextDirection);
+        float distanceToWaypoint = Vector3.Distance(transform.position, CurrentTargetedWaypoint);
 
         // If the angle is too sharp and too close to a waypoint, avoid boosting
         bool isBoost = angleToNextWaypoint > boostAngleThreshold && distanceToWaypoint < boostDistanceThreshold;
@@ -227,7 +197,7 @@ public class AICar : MonoBehaviour, IHandleCarInput
 
     void ResetCar()
     {
-        Vector3 direction = (CurrentWaypoint - OldWaypoint).normalized;
+        Vector3 direction = (CurrentTargetedWaypoint - OldWaypoint).normalized;
 
         carController.ResetCar(OldWaypoint, direction);
     }
@@ -253,7 +223,7 @@ public class AICar : MonoBehaviour, IHandleCarInput
     #endregion
 
 
-    // Debug visualization of current waypoint
+    #region Debug visualization 
     [Header("Debug Visualization")]
     public bool isShowGizmos;
     private void OnDrawGizmos()
@@ -263,14 +233,14 @@ public class AICar : MonoBehaviour, IHandleCarInput
         if (waypoints == null || waypoints.Count == 0) return;
 
         Gizmos.color = Color.red;
-        if (currentWaypointIndex < waypoints.Count)
-            Gizmos.DrawWireSphere(CurrentWaypoint, waypointThreshold);
+        if (Information.currentCheckpoint < waypoints.Count)
+            Gizmos.DrawSphere(CurrentTargetedWaypoint, 1f);
 
         /////////////////////
         Gizmos.color = Color.green;
         Gizmos.DrawLine(transform.position, transform.position + transform.forward * 5f);
 
-        Vector3 direction = CurrentWaypoint - transform.position;
+        Vector3 direction = CurrentTargetedWaypoint - transform.position;
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + direction.normalized * 5f);
 
@@ -284,4 +254,7 @@ public class AICar : MonoBehaviour, IHandleCarInput
             Handles.Label(transform.position + Vector3.up * 4f, $"Move: {carController.MoveInput:F1}   Steer: {carController.SteerInput:F1}", style);
         }
     }
+
+    
+    #endregion
 }

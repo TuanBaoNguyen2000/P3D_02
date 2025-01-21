@@ -21,6 +21,7 @@ public class RacerInfo
 
     public float raceProgress;
     public int currentPosition;
+    public bool isFinish;
 
     public RacerInfo(int id, string name)
     {
@@ -33,6 +34,7 @@ public class RacerInfo
 
         this.raceProgress = 0;
         this.currentPosition = 0;
+        this.isFinish = false;
     }
 }
 

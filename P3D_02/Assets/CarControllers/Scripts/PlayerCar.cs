@@ -55,8 +55,11 @@ public class PlayerCar : MonoBehaviour, IHandleCarInput, IRacerInformation
         boost = carController.CurrentBoostEnergy;
     }
 
+
+
     public void UpdateRacerProgress()
     {
+        //this.Information.raceProgress = this.Information.currentLap + (this.Information.currentCheckpoint )/ totalCheckPoint);
     }
 
     public void InitRacerInfo(int id, string name)

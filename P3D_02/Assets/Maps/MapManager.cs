@@ -8,49 +8,45 @@ public class MapManager : MonoBehaviour
     public Quaternion startRotation;
     public Transform startPositionsParent;
     public Transform waypointsParent;
-    public Transform finishLine;
 
     [Header("Debug visualization")]
     public bool isShowGizmos;
 
     public List<Transform> startpoints = new List<Transform>();
-    public List<Transform> waypoints = new List<Transform>();
+    public List<CheckPointTrigger> waypoints = new List<CheckPointTrigger>();
 
     private void Awake()
     {
-        Initialize();
     }
 
     private void Start()
     {
-        //GameManager.Instance.LoadMapData(this);
-        //GameManager.Instance.StartSinglePlayerRace();
+        GameManager.Instance.LoadMapData(this);
+        GameManager.Instance.StartSinglePlayerRace();
     }
 
-    public void Initialize()
+    private void UpdateElements()
     {
         // Startpoints
         if (startpoints.Count == 0)
         {
             foreach (Transform child in startPositionsParent)
-                startpoints.Add(child);
+                startpoints.Add(child.transform);
         }
 
         // Waypoints
         if (waypoints.Count == 0)
         {
             foreach (Transform child in waypointsParent)
-                waypoints.Add(child);
+                waypoints.Add(child.GetComponentInChildren<CheckPointTrigger>());
         } 
-            
-
     }
 
     private void OnValidate()
     {
         if (!Application.isPlaying && this.gameObject.activeInHierarchy)
         {
-            Initialize();
+            UpdateElements();
         }
     }
 
@@ -71,10 +67,10 @@ public class MapManager : MonoBehaviour
         {
             if (waypoints[i] != null)
             {
-                Gizmos.DrawSphere(waypoints[i].position, 0.3f);
+                Gizmos.DrawSphere(waypoints[i].Position, 0.3f);
 
                 if (i < waypoints.Count - 1 && waypoints[i + 1] != null)
-                    Gizmos.DrawLine(waypoints[i].position, waypoints[i + 1].position);
+                    Gizmos.DrawLine(waypoints[i].Position, waypoints[i + 1].Position);
             }
         }
     }

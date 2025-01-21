@@ -652,14 +652,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: []
-  waypointThreshold: 10
-  loopTrack: 1
   maxSpeedFactor: 1
   minSpeedFactor: 0.6
   angleForMaxSpeedReduction: 20
   steeringSensitivityFactor: 10
   driftAngleThreshold: 30
-  boostDistanceThreshold: 10
+  boostDistanceThreshold: 20
   boostAngleThreshold: 20
   isShowGizmos: 1
 --- !u!1 &8209523302169333274

@@ -15,6 +15,9 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private AICar aiCarPrefab;
     [SerializeField] private CameraFollow cameraFollow;
 
+    [Header("Managers")]
+    [SerializeField] private RaceProgressManager raceProgressManager;
+
     private UIManager uiManager => UIManager.Instance;
 
     private GameState currentGameState;
@@ -26,8 +29,7 @@ public class GameManager : Singleton<GameManager>
     private float raceTimer;
     private float countdownTimer;
     private bool isRaceActive;
-    private Dictionary<int, RacerData> racerDataDict = new Dictionary<int, RacerData>();
-
+    private Dictionary<int, IHandleCarInput> racers = new Dictionary<int, IHandleCarInput>();
     #region Single Player Methods
 
     private void Update()
@@ -58,7 +60,6 @@ public class GameManager : Singleton<GameManager>
     public void StartSinglePlayerRace()
     {
         currentGameState = GameState.Loading;
-        racerDataDict.Clear();
         isRaceActive = false;
         TotalRacer = numberOfAICars + 1;
 
@@ -74,21 +75,14 @@ public class GameManager : Singleton<GameManager>
         Vector3 playerSpawnPoint = currentMap.startpoints[0].position;
         PlayerCar playerCar = Instantiate(playerCarPrefab, playerSpawnPoint, currentMap.startRotation);
         playerCar.EnableControl = false;
+        playerCar.InitRacerInfo(0, "Player");
 
-        // Initialize player data
-        RacerData playerData = new RacerData
-        {
-            racerName = "Player",
-            racerHandleInput = playerCar,
-            currentLap = 0,
-            isFinished = false,
-            isAI = false,
-            checkpointIndex = 0
-        };
+        raceProgressManager.RegisterRacer(playerCar);
 
         CameraFollow camera = Instantiate(cameraFollow, Vector3.zero, Quaternion.identity);
         camera.carTarget = playerCar.transform;
-        racerDataDict.Add(0, playerData); // Player always has ID 0
+
+        racers.Add(0, playerCar);
     }
 
     private void SpawnAICars()
@@ -102,18 +96,10 @@ public class GameManager : Singleton<GameManager>
             aiCar.LoadWaypointData(currentMap.waypoints);
             aiCar.EnableControl = false;
 
-            // Initialize AI data
-            RacerData aiData = new RacerData
-            {
-                racerName = $"AI {i + 1}",
-                racerHandleInput = aiCar,
-                currentLap = 0,
-                isFinished = false,
-                isAI = true,
-                checkpointIndex = 0
-            };
+            aiCar.InitRacerInfo(i + 1, $"AI {i + 1}");
+            raceProgressManager.RegisterRacer(aiCar);
 
-            racerDataDict.Add(i + 1, aiData);
+            racers.Add(i + 1, aiCar);
         }
     }
 
@@ -132,9 +118,9 @@ public class GameManager : Singleton<GameManager>
         uiManager.ShowRaceUI();
 
         // Enable car controls for all racers
-        foreach (var racer in racerDataDict.Values)
+        foreach (var racer in racers.Values)
         {
-            racer.racerHandleInput.EnableControl = true;
+            racer.EnableControl = true;
         }
     }
 
@@ -146,88 +132,13 @@ public class GameManager : Singleton<GameManager>
         raceTimer += Time.deltaTime;
 
         // Update lap times
-        foreach (var racer in racerDataDict.Values)
-        {
-            if (!racer.isFinished)
-            {
-                racer.currentLapTime += Time.deltaTime;
-            }
-        }
-
-        CalculateRacePositions();
+        raceProgressManager.UpdateRaceProgress();
 
         // Update UI
         //uiManager.UpdateRaceInfo(raceTimer, racerDataDict);
-        uiManager.UpdateRacerPosition(racerDataDict);
+        uiManager.UpdateRacerPosition(raceProgressManager.GetCurrentRacerInfoList());
 
         CheckRaceEndConditions();
-    }
-
-    private void CalculateRacePositions()
-    {
-        // Convert dictionary to list for sorting
-        var racerList = new List<KeyValuePair<int, RacerData>>(racerDataDict);
-
-        // Sort based on laps and checkpoints
-        racerList.Sort((a, b) =>
-        {
-            // Compare laps
-            if (a.Value.currentLap != b.Value.currentLap)
-                return b.Value.currentLap.CompareTo(a.Value.currentLap);
-
-            // Compare checkpoints if on same lap
-            if (a.Value.checkpointIndex != b.Value.checkpointIndex)
-                return b.Value.checkpointIndex.CompareTo(a.Value.checkpointIndex);
-
-            // Compare lap times if at same checkpoint
-            return a.Value.currentLapTime.CompareTo(b.Value.currentLapTime);
-        });
-
-        // Assign positions
-        for (int i = 0; i < racerList.Count; i++)
-        {
-            racerList[i].Value.position = i + 1;
-        }
-
-    }
-
-    // Handle checkpoint crossing
-    public void OnCheckpointCrossed(int racerId, int checkpointIndex)
-    {
-        if (!racerDataDict.ContainsKey(racerId)) return;
-
-        RacerData racer = racerDataDict[racerId];
-
-        // Update checkpoint index
-        racer.checkpointIndex = checkpointIndex;
-
-        // Check if completed a lap
-        if (checkpointIndex == 0) // Assuming 0 is finish line
-        {
-            CompleteLap(racerId);
-        }
-    }
-
-    // Handle lap completion
-    private void CompleteLap(int racerId)
-    {
-        RacerData racer = racerDataDict[racerId];
-        racer.currentLap++;
-
-        // Update best lap time
-        if (racer.bestLapTime == 0 || racer.currentLapTime < racer.bestLapTime)
-        {
-            racer.bestLapTime = racer.currentLapTime;
-        }
-
-        // Reset current lap time
-        racer.currentLapTime = 0;
-
-        // Check if race is finished for this racer
-        if (racer.currentLap >= totalLaps)
-        {
-            racer.isFinished = true;
-        }
     }
 
     // Check if race should end
@@ -242,17 +153,8 @@ public class GameManager : Singleton<GameManager>
         }
 
         // Check if all racers finished
-        bool allFinished = true;
-        foreach (var racer in racerDataDict.Values)
-        {
-            if (!racer.isFinished)
-            {
-                allFinished = false;
-                break;
-            }
-        }
 
-        if (allFinished)
+        if (raceProgressManager.IsAllRacerFinished())
         {
             shouldEndRace = true;
         }
@@ -270,9 +172,9 @@ public class GameManager : Singleton<GameManager>
         currentGameState = GameState.RaceEnd;
 
         // Disable all car controls
-        foreach (var racer in racerDataDict.Values)
+        foreach (var racer in racers.Values)
         {
-            racer.racerHandleInput.EnableControl = false;
+            racer.EnableControl = false;
         }
 
         uiManager.ShowRaceResults();
@@ -354,24 +256,6 @@ public class GameManager : Singleton<GameManager>
     }
 
     #endregion
-}
-
-[System.Serializable]
-public class RacerData
-{
-    public string racerName;
-    public IHandleCarInput racerHandleInput;
-    public bool isAI;
-
-    public float currentLapTime;
-    public float bestLapTime;
-
-    public int position;
-    public bool isFinished;
-
-    public int currentLap;
-    public int checkpointIndex;
-    public float distanceFromNextCheckpoint;
 }
 
 public enum GameState

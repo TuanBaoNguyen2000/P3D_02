@@ -49,11 +49,11 @@ public class HUD : MonoBehaviour, IGameEventObserver
         }
     }
 
-    internal void UpdateRacerPosition(Dictionary<int, RacerData> racerDataDict)
+    internal void UpdateRacerPosition(List<IRacerInformation> racerInfos)
     {
-        foreach(var racer in racerDataDict)
+        foreach(var racer in racerInfos)
         {
-            racerRanks[racer.Value.position - 1].text = $"{racer.Value.position}: {racer.Value.racerName}"; 
+            racerRanks[racer.Information.currentPosition - 1].text = $"{racer.Information.currentPosition}: {racer.Information.racerName}"; 
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Linq;
 public class RaceProgressManager : MonoBehaviour, IRaceUpdater
 {
     private Dictionary<int, IRacerInformation> racerInformations = new Dictionary<int, IRacerInformation>();
-    private int nextRacerId = 0;
 
     [Header("Race Settings")]
     public int totalLaps = 3;
@@ -17,6 +16,10 @@ public class RaceProgressManager : MonoBehaviour, IRaceUpdater
     private void Update()
     {
         // Update progress for all racers
+    }
+
+    internal void UpdateRaceProgress()
+    {
         foreach (var racerInfo in racerInformations.Values)
         {
             racerInfo.UpdateRacerProgress();
@@ -86,28 +89,18 @@ public class RaceProgressManager : MonoBehaviour, IRaceUpdater
         }
     }
 
+    internal List<IRacerInformation> GetCurrentRacerInfoList()
+    {
+        return racerInformations.Values.ToList();
+    }
+
+    internal bool IsAllRacerFinished()
+    {
+        return !racerInformations.Any(kv => kv.Value.Information.isFinish == false);
+    }
+
     private void OnDrawGizmos()
     {
-        if (!showDebugInfo || checkpoints == null)
-            return;
 
-        // Draw checkpoints
-        for (int i = 0; i < checkpoints.Count; i++)
-        {
-            if (checkpoints[i] == null) continue;
-
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(checkpoints[i].position, 2f);
-
-            // Draw lines between checkpoints
-            if (i < checkpoints.Count - 1 && checkpoints[i + 1] != null)
-            {
-                Gizmos.DrawLine(checkpoints[i].position, checkpoints[i + 1].position);
-            }
-            else if (i == checkpoints.Count - 1 && checkpoints[0] != null)
-            {
-                Gizmos.DrawLine(checkpoints[i].position, checkpoints[0].position);
-            }
-        }
     }
 }

@@ -58,9 +58,9 @@ public class UIManager : Singleton<UIManager>
         //TODO
     }
 
-    public void UpdateRacerPosition(Dictionary<int, RacerData> racerDataDict)
+    public void UpdateRacerPosition(List<IRacerInformation> racerInfos)
     {
-        hud.UpdateRacerPosition(racerDataDict);
+        hud.UpdateRacerPosition(racerInfos);
     }
 
     public void ShowPauseMenu()
